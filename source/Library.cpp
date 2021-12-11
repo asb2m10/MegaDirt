@@ -1,16 +1,7 @@
 #include "Library.h"
 
-juce::String hashName(juce::String name) {
-    if ( name.containsChar(':') )
-        return name;
-    return name + ":1";
-}
-
-Sample *Library::get(juce::String name) {
-    juce::String fullname = hashName(name);
-    if ( ! content.contains(fullname) )
-        return nullptr;
-    return content[fullname].get();
+Sample *Library::get(juce::String name, int note) {
+    return content[name][note].sample.get();
 }
 
 void Library::findContent(juce::String samplePath) {
@@ -26,28 +17,30 @@ void Library::findContent(juce::String samplePath) {
                 continue;
             }
 
-             for(auto soundFile : file.findChildFiles(juce::File::TypesOfFileToFind::findDirectories, false, "*")) {
+            for(auto soundFile : file.findChildFiles(juce::File::TypesOfFileToFind::findDirectories, false, "*")) {
                 juce::Array<juce::File> soundList = soundFile.findChildFiles(juce::File::TypesOfFileToFind::findFiles, false, "*.wav");
                 soundList.sort();
-                juce::String soundName = soundFile.getFileName();
-
+                juce::Array<SampleHolder> holders;
                 for(int i=0; i<soundList.size();i++) {
-                   juce::String name = soundName + ":" + juce::String(i+1);
-                   juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
-                   if ( reader != nullptr ) {
-                      std::shared_ptr<Sample> sample;
-                      sample.reset(new Sample(*reader, 120));
-                      content.set(name, sample);
-                      delete reader;
-                   }
-                }
-             }
-          }
+                    SampleHolder holder;
+                    holder.filename = soundList[i];
 
-          printf("Finished reading %d samples\n", content.size());
+                    juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
+                    if ( reader != nullptr ) {
+                        numSamples++;
+                        holder.sample.reset(new Sample(*reader, 120));
+                        delete reader;
+                    }
+                    holders.add(holder);
+                }
+                numSounds++;
+                content.set(soundFile.getFileName(), holders);
+            }
+        }
+        printf("Finished reading %d samples\n", numSamples);
     });
 }
 
-bool Library::lookup(juce::String name) {
+/*bool Library::lookup(juce::String name, int note) {
     return content.contains(hashName(name));
-}
+}*/

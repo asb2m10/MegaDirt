@@ -10,13 +10,19 @@ struct Event {
     int orbit;
     float begin;
     float end;
-    float note;
+    float note = 0;
     float cps;
     float cycle;
+    float delta;
+
+    float ccv; 
+    float ccn;
 
     int midichan;
 };
 
+
+void processMidiMsg(Event *event, juce::MidiBuffer &buffer, float sampleRate);
 
 class Dispatch : private juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback> {
 public:

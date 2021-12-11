@@ -56,16 +56,21 @@ public:
   void getStateInformation(juce::MemoryBlock &destData) override;
   void setStateInformation(const void *data, int sizeInBytes) override;
 
-private:
-   juce::AudioParameterFloat *gain;
-   Dispatch dispatch;
    Library library;
-   DirtSampler sampler;
-   int samplepb;
 
-   juce::ApplicationProperties appProp;
-    
-  //std::array<juce:Array<int>, 16> activeMidiNotes;
+private:
+    juce::AudioParameterFloat *gain;
+    Dispatch dispatch;
+    DirtSampler sampler;
+    DirtSync sync;
+
+    double pos;
+
+    void processMidiMsg(Event *event, juce::MidiBuffer &midiMessage, int sampleStart);
+
+    juce::ApplicationProperties appProp;
+
+    const int DEFAULT_MIDI_VELOCITY = 100;
 
   //==============================================================================
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

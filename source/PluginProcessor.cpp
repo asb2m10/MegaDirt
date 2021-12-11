@@ -111,8 +111,8 @@ void DirtAudioProcessor::changeProgramName(int index, const juce::String &newNam
 void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
-  samplepb = samplesPerBlock;
-  sampler.sampleRate = sampleRate;
+  sampler.setSampleRate(sampleRate);
+  sync.setSampleRate(sampleRate);
 }
 
 void DirtAudioProcessor::releaseResources() {
@@ -127,10 +127,19 @@ bool DirtAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 }
 #endif
 
+void DirtAudioProcessor::processMidiMsg(Event *event, juce::MidiBuffer &midiMessages, int sampleStart) {
+    int targetNote = event->note + 64;
+    juce::MidiMessage noteOn(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY);
+    juce::MidiMessage noteOff(0x80+event->midichan, targetNote);
+    midiMessages.addEvent(noteOn, sampleStart);
+    midiMessages.addEvent(noteOff, sync.delta(event->cps, event->cycle, event->delta));
+}
+
 void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+    int numSample = buffer.getNumSamples();
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -151,20 +160,24 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     Event *event = dispatch.consume();
     while(event != nullptr) {
-        if ( event->sound == SOUND_MIDI ) {
+        int sampleStart = sync.offset(event->cps, event->cycle);
 
+        if ( event->sound == SOUND_MIDI ) {
+          processMidiMsg(event, midiMessages, sampleStart);          
         } else {
-            Sample *sample = library.get(event->sound);
+            Sample *sample = library.get(event->sound, 0);
             if ( sample != nullptr ) {
-                sampler.play(sample);
+                sampler.play(sample, sampleStart);
             }
         }
         free(event);
         event = dispatch.consume();
     }
 
-    sampler.processBlock(buffer, samplepb);
+    sampler.processBlock(buffer, numSample);
     buffer.applyGain(*gain);
+
+    sync.advance(numSample);
 }
 
 //==============================================================================

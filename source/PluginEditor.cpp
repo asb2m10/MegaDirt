@@ -11,10 +11,9 @@
 
 //==============================================================================
 DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) : 
-  AudioProcessorEditor(&p), audioProcessor(p) {
+  AudioProcessorEditor(&p), audioProcessor(p), soundBrowser("SoundBrowser") {
 
-  addAndMakeVisible (monitor);
-
+  addAndMakeVisible (soundBrowser);
   setSize(700, 400);
 }
 
@@ -39,5 +38,5 @@ void DirtAudioProcessorEditor::resized() {
   // This is generally where you'll want to lay out the positions of any
   // subcomponents in your editor..
 
-  monitor.setBounds(getLocalBounds());
+  soundBrowser.setBounds(getLocalBounds());
 }

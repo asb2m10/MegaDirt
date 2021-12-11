@@ -2,15 +2,17 @@
 
 //const int PLAY_S = juce::String("s").hashCode();
 const juce::StringRef PLAY_S("s");
-const auto PLAY_ID = juce::String("_id_");
-const auto PLAY_CPS = juce::String("cps");
-const auto PLAY_CYCLE = juce::String("cycle");
-const auto PLAY_DELTA = juce::String("delta");
-const auto PLAY_ORBIT = juce::String("orbit");
-const auto PLAY_BEGIN = juce::String("begin");
-const auto PLAY_END = juce::String("end");
-const auto PLAY_N = juce::String("n");
-const auto PLAY_MIDICHAN = juce::String("midichan");
+const juce::StringRef PLAY_ID("_id_");
+const juce::StringRef PLAY_CPS("cps");
+const juce::StringRef PLAY_CYCLE("cycle");
+const juce::StringRef PLAY_DELTA("delta");
+const juce::StringRef PLAY_ORBIT("orbit");
+const juce::StringRef PLAY_BEGIN("begin");
+const juce::StringRef PLAY_END("end");
+const juce::StringRef PLAY_NOTE("n");
+const juce::StringRef PLAY_MIDICHAN("midichan");
+const juce::StringRef PLAY_CCN("ccn");
+const juce::StringRef PLAY_CCV("ccv");
 
 juce::String showOSCMessageArgument (const juce::OSCArgument& arg)
     {
@@ -98,7 +100,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
             event->begin = message[i+1].getFloat32();
         } else if ( item == PLAY_END ) {
             event->end = message[i+1].getFloat32();
-        } else if ( item == PLAY_N ) {
+        } else if ( item == PLAY_NOTE ) {
             event->note = message[i+1].getFloat32();
         } else if ( item == PLAY_ORBIT ) {
             event->orbit = message[i+1].getInt32();
@@ -107,8 +109,10 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
         } else if ( item == PLAY_CPS ) {
 	        event->cps = message[i+1].getFloat32();
 	    } else if ( item == PLAY_CYCLE ) {
-    	    event->cps = message[i+1].getFloat32();
-	    }
+    	    event->cycle = message[i+1].getFloat32();
+	    } else if ( item == PLAY_DELTA ) {
+            event->delta = message[i+1].getFloat32();
+        }
     }
 
     juce::String st;
@@ -142,7 +146,5 @@ void Dispatch::oscBundleReceived (const juce::OSCBundle& bundle) {
             printf("Caline un bundle dans bundle\n");
         }
     }
-
-
 }
 

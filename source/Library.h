@@ -10,34 +10,53 @@
 // time, to reduce duplication and copying.
 class Sample final {
 public:
-  Sample(juce::AudioFormatReader &source, double maxSampleLengthSecs)
-      : sourceSampleRate(source.sampleRate),
-        length(juce::jmin(int(source.lengthInSamples),
-                    int(maxSampleLengthSecs * sourceSampleRate))),
-        data(juce::jmin(2, int(source.numChannels)), length + 4) {
-    if (length == 0)
-      throw std::runtime_error("Unable to load sample");
+    Sample(juce::AudioFormatReader &source, double maxSampleLengthSecs)
+            : sourceSampleRate(source.sampleRate), length(juce::jmin(int(source.lengthInSamples),
+              int(maxSampleLengthSecs * sourceSampleRate))), data(juce::jmin(2, int(source.numChannels)), length + 4) {
+        if (length == 0)
+            throw std::runtime_error("Unable to load sample");
 
-    source.read(&data, 0, length + 4, 0, true, true);
-  }
+        source.read(&data, 0, length + 4, 0, true, true);
+    }
 
-  double getSampleRate() const { return sourceSampleRate; }
-  int getLength() const { return length; }
-  const juce::AudioBuffer<float> &getBuffer() const { return data; }
+    double getSampleRate() const { return sourceSampleRate; }
+    
+    int getLength() const { return length; }
+    
+    const juce::AudioBuffer<float> &getBuffer() const { return data; }
 
 private:
-  double sourceSampleRate;
-  int length;
-  juce::AudioBuffer<float> data;
+    double sourceSampleRate;
+    int length;
+    juce::AudioBuffer<float> data;
+};
+
+struct SampleHolder {
+    juce::File filename;
+    std::shared_ptr<Sample> sample;
 };
 
 class Library {
 public:
+    int getNumSamples() {
+        return numSamples;
+    }
+
+    int getNumSounds() {
+        return numSounds;
+    }
+
 
     void findContent(juce::String samplePath);
-    bool lookup(juce::String name);
-    Sample *get(juce::String name);
+    bool lookup(juce::String name, int note);
+    Sample *get(juce::String name, int note);
+    juce::Array<SampleHolder> &get(juce::String sound) {
+        return content.getReference(sound);
+    }
 
 private:
-   juce::HashMap<juce::String, std::shared_ptr<Sample>> content;
+    int numSamples = 0;
+    int numSounds = 0;
+
+    juce::HashMap<juce::String, juce::Array<SampleHolder>> content;
 };
