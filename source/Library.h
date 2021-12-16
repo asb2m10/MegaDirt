@@ -20,9 +20,7 @@ public:
     }
 
     double getSampleRate() const { return sourceSampleRate; }
-    
     int getLength() const { return length; }
-    
     const juce::AudioBuffer<float> &getBuffer() const { return data; }
 
 private:
@@ -45,7 +43,6 @@ public:
     int getNumSounds() {
         return numSounds;
     }
-
 
     void findContent(juce::String samplePath);
     bool lookup(juce::String name, int note);

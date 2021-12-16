@@ -112,7 +112,6 @@ void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
   sampler.setSampleRate(sampleRate);
-  sync.setSampleRate(sampleRate);
 }
 
 void DirtAudioProcessor::releaseResources() {
@@ -127,12 +126,12 @@ bool DirtAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 }
 #endif
 
-void DirtAudioProcessor::processMidiMsg(Event *event, juce::MidiBuffer &midiMessages, int sampleStart) {
+void DirtAudioProcessor::processMidiMsg(Event *event, juce::MidiBuffer &midiMessages, int offsetStart) {
     int targetNote = event->note + 64;
     juce::MidiMessage noteOn(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY);
     juce::MidiMessage noteOff(0x80+event->midichan, targetNote);
-    midiMessages.addEvent(noteOn, sampleStart);
-    midiMessages.addEvent(noteOff, sync.delta(event->cps, event->cycle, event->delta));
+    midiMessages.addEvent(noteOn, offsetStart);
+    midiMessages.addEvent(noteOff, sampler.delta(event->cps, event->cycle, event->delta));
 }
 
 void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
@@ -160,14 +159,25 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     Event *event = dispatch.consume();
     while(event != nullptr) {
-        int sampleStart = sync.offset(event->cps, event->cycle);
+        int offsetStart = sampler.offset2(event->cps, event->cycle);
+        int sampleLength = sampler.delta(event->cps, event->cycle, event->delta);
+
+        if ( event->orbit > orbits.size() ) {
+            printf("Orbit value to high %d\n", event->orbit);
+            continue;
+        }
+
+        orbitActivity.set(event->orbit, true);
 
         if ( event->sound == SOUND_MIDI ) {
-          processMidiMsg(event, midiMessages, sampleStart);          
+            processMidiMsg(event, midiMessages, offsetStart);
+            midiActivity.set(event->midichan, true);
         } else {
-            Sample *sample = library.get(event->sound, 0);
+            Sample *sample = library.get(event->sound, event->note);
             if ( sample != nullptr ) {
-                sampler.play(sample, sampleStart);
+                sampler.play(sample, offsetStart, sampleLength);
+            } else {
+                printf("Sample %s:%i not found", event->sound.toRawUTF8(), (int) event->note);
             }
         }
         free(event);
@@ -176,8 +186,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     sampler.processBlock(buffer, numSample);
     buffer.applyGain(*gain);
-
-    sync.advance(numSample);
 }
 
 //==============================================================================

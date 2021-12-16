@@ -8,78 +8,47 @@ struct DirtVoice {
     int id;
 
     Sample *sample;
+
+    /**
+     * @brief Position of the voice on the sample
+     */
     float samplePos = 1;
+
+    /**
+     * @brief Position on the sample where the voice should start playing
+     */
     float sampleStart = 0;
+
+    /**
+     * @brief Position on the sample where the voice should stop playing
+     */
     float sampleEnd = 0;
+
+    /**
+     * @brief Pitch ratio on the playhead
+     */
     float pitchRatio = 0;
+
+    /**
+     * @brief The moment the voice should start playing
+     */
     int startOffset = 0;
+
+    /**
+     * @brief The "output" orbit of the voice.
+     */
     int orbit = 0;
 
+    // Enveloppe
+    float envPos;
+    float releasePos;
 
+    juce::ADSR adsr;
 
-    float getEnv() {
-
-    }
-};
-
-
-/**
- * To be able to sync TidalCycles with DAW timeline.
- */
-class DirtSync {
-    void reset(double target) {
-        printf("resync***\n");
-        samplePos = target;
-    }
-public:
-    double samplePos = 0;
-    float sampleRate;
-    float sampleLatency;
-    const float EVENT_LATENCY = 0.3;
-
-    int oldDiff;
-
-    int offset(float cps, float cycle) {
-        double dest = (sampleRate / cps) * cycle;
-        double recycle = (samplePos - sampleLatency)/ sampleRate * 0.5625;
-        printf("pos %f-%f ", recycle, cycle);
-
-        if ( dest < samplePos ) {
-            printf(" ** Sample to soon %f %f delta %f\n", samplePos, dest, dest - samplePos);
-            samplePos = dest - sampleLatency;
-            return sampleLatency;
-        }
-
-        if (  dest > samplePos + sampleLatency * 2) {
-            printf(" ** Sample to far %f %f delta %f\n", samplePos, dest, dest - samplePos);
-            samplePos = dest;
-            return sampleLatency;
-        }
-    
-        int target = dest - samplePos;
-
-        printf("ok diff %f diffdiff %i\n", recycle-cycle, target);
-        oldDiff = target;
-        return target;
-    }
-
-    int delta(float cps, float cycle, float delta) {
-        double dest = (sampleRate / cps) * cycle;
-        return (dest - samplePos) + sampleRate * delta;
-    }
-
-    int bloc = 0;
-    void advance(int samples) {
-        samplePos += samples;
-        if ( samples != bloc ) {
-            printf("bloc size %i sample\n", samples);
-            bloc = samples;
-        }
-    }
-
-    void setSampleRate(float rate) {
-        sampleRate = rate;
-        sampleLatency = sampleRate * EVENT_LATENCY;
+    inline float getNextSample() {
+        if ( envPos > releasePos )
+            adsr.noteOff();
+        return adsr.getNextSample();
     }
 };
 
@@ -87,15 +56,34 @@ class DirtSampler {
     std::array<DirtVoice, 30> voices;
     float sampleRate = 44100;
 
+    double syncSamplePos = 0;
+    float sampleLatency;
+    const float EVENT_LATENCY = 0.3;
+    void advance(int samples);
+
 public:
+    struct ItemOffset {
+        int start;
+        int end;
+    };
 
     DirtSampler() {
         for(int i=0; i<voices.size();i++) {
+            juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
             voices[i].id = i;
+            voices[i].adsr.setParameters(envParameters);
         }
     }
 
+    // returns when the event should start playing in samples
+    int offset2(float cps, float cycle);
+    
+    // returns the event duration in samples
+    int delta(float cps, float cycle, float delta);
+
+    ItemOffset offset(Event *event);
+
     void setSampleRate(float rate);
     void processBlock(juce::AudioBuffer<float> &buffer, int numSamples);
-    void play(Sample *sample, int sampleStart = 0, float begin = 0, float end = -1);
+    void play(Sample *sample, int offsetStart, int sampleLength);
 };

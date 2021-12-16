@@ -1,6 +1,12 @@
 #include "Library.h"
 
 Sample *Library::get(juce::String name, int note) {
+    if ( ! content.contains(name) )
+        return nullptr;
+
+    if ( content[name].size() < note )
+        return nullptr;
+
     return content[name][note].sample.get();
 }
 

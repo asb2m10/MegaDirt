@@ -10,32 +10,29 @@
 
 //#include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "juce_osc/juce_osc.h"
-
-namespace juce { 
-  #include "example/OSCDemo.h"
-}
+#include "DirtUI.h"
 
 //==============================================================================
 /**
  */
 class DirtAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer {
 public:
-  DirtAudioProcessorEditor(DirtAudioProcessor &);
-  ~DirtAudioProcessorEditor() override;
+    DirtAudioProcessorEditor(DirtAudioProcessor &);
+    ~DirtAudioProcessorEditor() override;
 
-  //==============================================================================
-  void paint(juce::Graphics &) override;
-  void resized() override;
+    //==============================================================================
+    void paint(juce::Graphics &) override;
+    void resized() override;
 
-  virtual void timerCallback() override;
+    virtual void timerCallback() override;
 
 private:
-  // This reference is provided as a quick way for your editor to
-  // access the processor object that created it.
-  DirtAudioProcessor &audioProcessor;
+    // This reference is provided as a quick way for your editor to
+    // access the processor object that created it.
+    DirtAudioProcessor &audioProcessor;
 
-  juce::TreeView soundBrowser;
+    juce::TreeView soundBrowser;
+    juce::TextButton panicButton;
 
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessorEditor)
 };

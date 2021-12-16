@@ -21,9 +21,6 @@ struct Event {
     int midichan;
 };
 
-
-void processMidiMsg(Event *event, juce::MidiBuffer &buffer, float sampleRate);
-
 class Dispatch : private juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback> {
 public:
     Dispatch();
