@@ -71,10 +71,6 @@ private:
     juce::AudioParameterFloat *gain;
     Dispatch dispatch;
     DirtSampler sampler;
-    
-    double pos;
-
-    void processMidiMsg(Event *event, juce::MidiBuffer &midiMessage, int offsetStart);
 
     juce::ApplicationProperties appProp;
 

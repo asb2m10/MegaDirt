@@ -1,4 +1,6 @@
 #include "Library.h"
+Library::Library() : juce::Thread("LibraryFinder") {
+}
 
 Sample *Library::get(juce::String name, int note) {
     if ( ! content.contains(name) )
@@ -11,40 +13,48 @@ Sample *Library::get(juce::String name, int note) {
 }
 
 void Library::findContent(juce::String samplePath) {
-    juce::StringArray paths = juce::StringArray::fromTokens(samplePath, ":", "");
-    juce::Thread::launch([this, paths] {
-        juce::AudioFormatManager manager;
-        manager.registerBasicFormats();
+    soundPaths = juce::StringArray::fromTokens(samplePath, ":", "");
+    // restart indexer
+    if ( stopThread(200) )
+        startThread();
+}
 
-        for(auto root : paths) {
-            juce::File file(root);
-            if (! file.isDirectory()) {
-                printf("Path %s doesn't exists\n", file.getFullPathName().toRawUTF8());
-                continue;
-            }
+void Library::run() {
+    juce::AudioFormatManager manager;
+    manager.registerBasicFormats();
 
-            for(auto soundFile : file.findChildFiles(juce::File::TypesOfFileToFind::findDirectories, false, "*")) {
-                juce::Array<juce::File> soundList = soundFile.findChildFiles(juce::File::TypesOfFileToFind::findFiles, false, "*.wav");
-                soundList.sort();
-                juce::Array<SampleHolder> holders;
-                for(int i=0; i<soundList.size();i++) {
-                    SampleHolder holder;
-                    holder.filename = soundList[i];
+    for(auto root : soundPaths) {
+        juce::File file(root);
+        if (! file.isDirectory()) {
+            printf("Path %s doesn't exists\n", file.getFullPathName().toRawUTF8());
+            continue;
+        }
 
-                    juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
-                    if ( reader != nullptr ) {
-                        numSamples++;
-                        holder.sample.reset(new Sample(*reader, 120));
-                        delete reader;
-                    }
-                    holders.add(holder);
+        for(auto soundFile : file.findChildFiles(juce::File::TypesOfFileToFind::findDirectories, false, "*")) {
+            juce::Array<juce::File> soundList = soundFile.findChildFiles(juce::File::TypesOfFileToFind::findFiles, false, "*.wav");
+            soundList.sort();
+            juce::Array<SampleHolder> holders;
+            for(int i=0; i<soundList.size();i++) {
+                SampleHolder holder;
+                holder.filename = soundList[i];
+
+                juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
+                if ( reader != nullptr ) {
+                    numSamples++;
+                    holder.sample.reset(new Sample(*reader, 120));
+                    delete reader;
                 }
-                numSounds++;
-                content.set(soundFile.getFileName(), holders);
+                holders.add(holder);
+            }
+            numSounds++;
+            content.set(soundFile.getFileName(), holders);
+            if ( threadShouldExit() ) {
+                printf("Exiting thread reading...\n");
+                return;
             }
         }
-        printf("Finished reading %d samples\n", numSamples);
-    });
+    }
+    printf("Finished reading %d samples\n", numSamples);
 }
 
 /*bool Library::lookup(juce::String name, int note) {

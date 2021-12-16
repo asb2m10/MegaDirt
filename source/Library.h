@@ -34,8 +34,10 @@ struct SampleHolder {
     std::shared_ptr<Sample> sample;
 };
 
-class Library {
+class Library : juce::Thread {
 public:
+    Library();
+
     int getNumSamples() {
         return numSamples;
     }
@@ -51,9 +53,14 @@ public:
         return content.getReference(sound);
     }
 
+    void shutdown() {
+        stopThread(200);
+    }
 private:
     int numSamples = 0;
     int numSounds = 0;
 
+    void run() override;
+    juce::StringArray soundPaths;
     juce::HashMap<juce::String, juce::Array<SampleHolder>> content;
 };

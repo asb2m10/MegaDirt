@@ -56,6 +56,7 @@ DirtAudioProcessor::DirtAudioProcessor()
 }
 
 DirtAudioProcessor::~DirtAudioProcessor() {
+    library.shutdown();
 }
 
 //==============================================================================
@@ -126,14 +127,6 @@ bool DirtAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) cons
 }
 #endif
 
-void DirtAudioProcessor::processMidiMsg(Event *event, juce::MidiBuffer &midiMessages, int offsetStart) {
-    int targetNote = event->note + 64;
-    juce::MidiMessage noteOn(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY);
-    juce::MidiMessage noteOff(0x80+event->midichan, targetNote);
-    midiMessages.addEvent(noteOn, offsetStart);
-    midiMessages.addEvent(noteOff, sampler.delta(event->cps, event->cycle, event->delta));
-}
-
 void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
@@ -159,8 +152,8 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     Event *event = dispatch.consume();
     while(event != nullptr) {
-        int offsetStart = sampler.offset2(event->cps, event->cycle);
-        int sampleLength = sampler.delta(event->cps, event->cycle, event->delta);
+        int offsetStart;
+        int playLength = sampler.offset(offsetStart, event);
 
         if ( event->orbit > orbits.size() ) {
             printf("Orbit value to high %d\n", event->orbit);
@@ -170,14 +163,16 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         orbitActivity.set(event->orbit, true);
 
         if ( event->sound == SOUND_MIDI ) {
-            processMidiMsg(event, midiMessages, offsetStart);
+            int targetNote = event->note + 64;
+            midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY), offsetStart);
+            midiMessages.addEvent(juce::MidiMessage(0x80+event->midichan, targetNote), playLength);
             midiActivity.set(event->midichan, true);
         } else {
             Sample *sample = library.get(event->sound, event->note);
             if ( sample != nullptr ) {
-                sampler.play(sample, offsetStart, sampleLength);
+                sampler.play(event, sample, offsetStart, playLength);
             } else {
-                printf("Sample %s:%i not found", event->sound.toRawUTF8(), (int) event->note);
+                printf("Sample %s:%i not found\n", event->sound.toRawUTF8(), (int) event->note);
             }
         }
         free(event);

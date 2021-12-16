@@ -62,11 +62,6 @@ class DirtSampler {
     void advance(int samples);
 
 public:
-    struct ItemOffset {
-        int start;
-        int end;
-    };
-
     DirtSampler() {
         for(int i=0; i<voices.size();i++) {
             juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
@@ -76,14 +71,14 @@ public:
     }
 
     // returns when the event should start playing in samples
-    int offset2(float cps, float cycle);
+/*    int offset2(float cps, float cycle);
     
     // returns the event duration in samples
-    int delta(float cps, float cycle, float delta);
+    int delta(float cps, float cycle, float delta);*/
 
-    ItemOffset offset(Event *event);
+    int offset(int &sampleStart, Event *event);
 
     void setSampleRate(float rate);
     void processBlock(juce::AudioBuffer<float> &buffer, int numSamples);
-    void play(Sample *sample, int offsetStart, int sampleLength);
+    void play(Event *event, Sample *sample, int offsetStart, int playLength);
 };

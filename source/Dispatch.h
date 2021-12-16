@@ -7,18 +7,20 @@
 struct Event {
     juce::String sound;
 
-    int orbit;
-    float begin;
-    float end;
+    int orbit = 0;
+    float begin = 0;
+    float end = 1;
     float note = 0;
     float cps;
     float cycle;
     float delta;
 
+    float legato = -1;
+
     float ccv; 
     float ccn;
 
-    int midichan;
+    int midichan = 0;
 };
 
 class Dispatch : private juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback> {
