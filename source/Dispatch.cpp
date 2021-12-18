@@ -114,7 +114,6 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
         }
     }
 
-
     printf("%f %f\n", event->begin, event->end);
     /**
         for (auto& arg : message) {

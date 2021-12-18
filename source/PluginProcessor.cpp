@@ -31,9 +31,9 @@ DirtAudioProcessor::DirtAudioProcessor()
     dispatch.connect(57120);
 
     juce::PropertiesFile::Options options;
-    options.applicationName = "dirty";
+    options.applicationName = "MegaDirt";
     options.osxLibrarySubFolder = "Application Support";
-    options.folderName = "dirty";
+    options.folderName = "MegaDirt";
     options.filenameSuffix = "settings";
     appProp.setStorageParameters(options);
 
@@ -48,7 +48,6 @@ DirtAudioProcessor::DirtAudioProcessor()
             // Linux
             samplePath = home.getChildFile(".local/share/SuperCollider/downloaded-quarks/Dirt-Samples").getFullPathName();
         }
-
         printf("Trying default path for Dirt-Sample: %s\n", samplePath.toRawUTF8());
     }
 

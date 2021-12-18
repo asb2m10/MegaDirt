@@ -110,35 +110,3 @@ int DirtSampler::offset(int &sampleStart, Event *event) {
 
     return (dest - syncSamplePos) + sampleRate * event->delta;
 }
-
-
-
-/*int oldDiff;
-int DirtSampler::offset2(float cps, float cycle) {
-    double dest = (sampleRate / cps) * cycle;
-    double recycle = (syncSamplePos - sampleLatency)/ sampleRate * 0.5625;
-    printf("pos %f-%f ", recycle, cycle);
-
-    if ( dest < syncSamplePos ) {
-        printf(" ** Sample to soon %f %f delta %f\n", syncSamplePos, dest, dest - syncSamplePos);
-        syncSamplePos = dest - sampleLatency;
-        return sampleLatency;
-    }
-
-    if ( dest > syncSamplePos + sampleLatency * 2 ) {
-        printf(" ** Sample to far %f %f delta %f\n", syncSamplePos, dest, dest - syncSamplePos);
-        syncSamplePos = dest;
-        return sampleLatency;
-    }
-
-    int target = dest - syncSamplePos;
-
-    printf("ok diff %f diffdiff %i\n", recycle-cycle, target);
-    oldDiff = target;
-    return target;
-}*/
-
-/*int DirtSampler::delta(float cps, float cycle, float delta) {
-    double dest = (sampleRate / cps) * cycle;
-    return (dest - syncSamplePos) + sampleRate * delta;
-}*/

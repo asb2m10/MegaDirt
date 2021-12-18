@@ -70,12 +70,6 @@ public:
         }
     }
 
-    // returns when the event should start playing in samples
-/*    int offset2(float cps, float cycle);
-    
-    // returns the event duration in samples
-    int delta(float cps, float cycle, float delta);*/
-
     int offset(int &sampleStart, Event *event);
 
     void setSampleRate(float rate);

@@ -24,15 +24,18 @@ public:
     void paint(juce::Graphics &) override;
     void resized() override;
 
+    void playSound(juce::String soundName, int note);
+
     virtual void timerCallback() override;
 
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     DirtAudioProcessor &audioProcessor;
-
+    RootTreeViewItem *rootItem;
     juce::TreeView soundBrowser;
     juce::TextButton panicButton;
+    juce::TextEditor showLog;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessorEditor)
 };

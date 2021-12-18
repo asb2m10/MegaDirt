@@ -56,11 +56,12 @@ public:
     void shutdown() {
         stopThread(200);
     }
+
+    juce::HashMap<juce::String, juce::Array<SampleHolder>> content;
 private:
     int numSamples = 0;
     int numSounds = 0;
 
     void run() override;
     juce::StringArray soundPaths;
-    juce::HashMap<juce::String, juce::Array<SampleHolder>> content;
 };
