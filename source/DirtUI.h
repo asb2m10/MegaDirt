@@ -5,7 +5,8 @@
 class TreeViewSorter {
 public:
     static int compareElements(juce::TreeViewItem *i1, juce::TreeViewItem *i2) {
-        return (i1->getUniqueName() < i2->getUniqueName()) ? -1 : ((i1->getUniqueName() < i2->getUniqueName()) ? 1 : 0);
+        printf("compare\n");
+        return (i1->getUniqueName().compare(i2->getUniqueName()));
     }
 };
 const TreeViewSorter treeViewSorter;

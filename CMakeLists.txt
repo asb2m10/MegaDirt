@@ -9,6 +9,7 @@ project(MEGADIRT VERSION 0.0.1)
 add_subdirectory(libs/JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 
 add_definitions(-w)
+add_definitions(-D JUCER_ENABLE_GPL_MODE=1)
 include_directories(libs/JuceLockFreeQueue)
 
 # juce_set_vst2_sdk_path(...)
@@ -24,13 +25,13 @@ juce_add_plugin(MegaDirt
     # VERSION ...                               # Set this if the plugin version is different to the project version
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
-    COMPANY_NAME Digital Suburban                          # Specify the name of the plugin's author
+    COMPANY_NAME Digital Suburban               # Specify the name of the plugin's author
     IS_SYNTH TRUE                               # Is this a synth or an effect?
     # NEEDS_MIDI_INPUT TRUE/FALSE               # Does the plugin need midi input?
     NEEDS_MIDI_OUTPUT TRUE                      # Does the plugin need midi output?
     # IS_MIDI_EFFECT TRUE/FALSE                 # Is this plugin a MIDI effect?
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
-    # COPY_PLUGIN_AFTER_BUILD TRUE/FALSE        # Should the plugin be installed to a default location after building?
+    COPY_PLUGIN_AFTER_BUILD TRUE                # Should the plugin be installed to a default location after building?
     PLUGIN_MANUFACTURER_CODE DSBG               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE DIRT                            # A unique four-character plugin id with exactly one upper-case character
                                                 # GarageBand 10.3 requires the first letter to be upper-case, and the remaining letters to be lower-case

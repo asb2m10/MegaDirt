@@ -33,7 +33,12 @@ public:
     void oscBundleReceived (const juce::OSCBundle& bundle) override;
 
     Event *consume();
+
+    bool isConnected() {
+        return connected;
+    }
 private:
+    bool connected = false;
 
     void processPlay(const juce::OSCMessage& message);
     juce::LockFreeQueue<Event *> queue;

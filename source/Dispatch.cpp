@@ -53,7 +53,7 @@ Dispatch::~Dispatch() {
 }
 
 void Dispatch::connect(int port) {
-    oscReceiver.connect(port);
+    connected = oscReceiver.connect(port);
 }
 
 void Dispatch::oscMessageReceived(const juce::OSCMessage& message) {
