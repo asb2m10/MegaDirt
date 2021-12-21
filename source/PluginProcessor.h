@@ -67,6 +67,8 @@ public:
     Library library;
 
     friend DirtAudioProcessorEditor;
+
+    const int DIRT_UPD_PORT = 57120;
 private:
     juce::AudioParameterFloat *gain;
     Dispatch dispatch;

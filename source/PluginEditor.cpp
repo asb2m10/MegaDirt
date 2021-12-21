@@ -9,23 +9,34 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 
+class TreeViewSorter {
+public:
+    static int compareElements(juce::TreeViewItem *i1, juce::TreeViewItem *i2) {
+        return i1->getUniqueName().compare(i2->getUniqueName());
+    }
+};
+const TreeViewSorter treeViewSorter;
+
 void NoteTreeViewItem::itemClicked(const juce::MouseEvent &e) {
     DirtAudioProcessorEditor *editor = getOwnerView()->findParentComponentOfClass<DirtAudioProcessorEditor>();
-
     jassert(editor);
-
-/*    TreeViewItem *sound = getParentItem();
-    TreeViewItem *rootGeneric = sound->getParentItem();
-    RootTreeViewItem *root = dynamic_cast<RootTreeViewItem *>(rootGeneric);
-
-    root->
-    */
     printf("click %s\n", sound->toRawUTF8());
+}
+
+void RootTreeViewItem::refresh() {
+    for(juce::HashMap<juce::String, juce::Array<SampleHolder>>::Iterator i(library->content); i.next();) {
+        if ( ! refContent.contains(i.getKey()) ) {
+            refContent.set(i.getKey(), 0);
+            SoundTreeViewItem *sound = new SoundTreeViewItem(i.getKey(), library);
+            addSubItemSorted(treeViewSorter, sound);
+        }
+    }
 }
 
 //==============================================================================
 DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) : 
-    AudioProcessorEditor(&p), audioProcessor(p), soundBrowser("SoundBrowser"), panicButton("Panic"), showLog("showLog") {
+    AudioProcessorEditor(&p), audioProcessor(p), soundBrowser("SoundBrowser"), panicButton("Panic"), showLog("showLog"),
+       libraryContent("LibraryContent", "Library Content"), libraryPath("Set Library Path...") {
 
     rootItem = new RootTreeViewItem(&p.library);
 
@@ -33,22 +44,32 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     soundBrowser.setRootItemVisible(false);
     addAndMakeVisible(soundBrowser);
 
-
     showLog.setMultiLine(true);
     showLog.setReadOnly(true);
     showLog.setScrollbarsShown(true);
 
     addAndMakeVisible(showLog);
     addAndMakeVisible(panicButton);
+    addAndMakeVisible(libraryContent);
+    addAndMakeVisible(libraryPath);
 
-    setSize(700, 400);
+    setSize(900, 500);
+
     startTimer(100);
 
+    if ( ! p.dispatch.isConnected() ) {
+        juce::AlertWindow::showAsync (juce::MessageBoxOptions()
+                                    .withIconType (juce::MessageBoxIconType::WarningIcon)
+                                    .withTitle ("Alert Box")
+                                    .withMessage (juce::String("Unable to listen TidalCycle for port ") + juce::String(p.DIRT_UPD_PORT))
+                                    .withButton ("OK"),
+                                nullptr);
+    }
 }
 
 DirtAudioProcessorEditor::~DirtAudioProcessorEditor() {
-//    soundBrowser.deleteAllChildren();
     stopTimer();
+    soundBrowser.deleteRootItem();
 }
 
 void DirtAudioProcessorEditor::timerCallback() {
@@ -58,9 +79,7 @@ void DirtAudioProcessorEditor::timerCallback() {
 
 //==============================================================================
 void DirtAudioProcessorEditor::paint(juce::Graphics &g) {
-    // (Our component is opaque, so we must completely fill the background with a
-    // solid colour)
-    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+//    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 
     /*g.setColour (juce::Colours::white);
     g.setFont (15.0f);
@@ -68,12 +87,38 @@ void DirtAudioProcessorEditor::paint(juce::Graphics &g) {
 }
 
 void DirtAudioProcessorEditor::resized() {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-
     int width = getWidth();
     int height = getHeight();
     panicButton.setBounds(width-55, 5, 50, 30);
-    soundBrowser.setBounds(5, 5, 300, height - 5);
-    showLog.setBounds(305, (height - 10) / 2, width - 305, (height - 10) / 2);
+    libraryContent.setBounds(5, 3, 295, 25);
+    libraryPath.setBounds(175, 3, 120, 25);
+    libraryPath.onClick = [this] { this->setLibraryPath(); };
+
+    soundBrowser.setBounds(5, 35, 295, height - 55);
+    showLog.setBounds(305, (height - 20) / 2, width - 315, (height - 20) / 2);
+}
+
+void DirtAudioProcessorEditor::setLibraryPath() {
+    juce::PropertiesFile *prop = audioProcessor.appProp.getUserSettings();
+    juce::String samplePath = prop->getValue("samplePath", "");
+
+    return;
+
+    juce::AlertWindow *asyncAlertWindow = new juce::AlertWindow ("AlertWindow demo..",
+                                                        "This AlertWindow has a couple of extra components added to show how to add drop-down lists and text entry boxes.",
+                                                        juce::MessageBoxIconType::QuestionIcon);
+
+    asyncAlertWindow->addTextEditor ("text", "enter some text here", "text field:");
+    asyncAlertWindow->addComboBox ("option", { "option 1", "option 2", "option 3", "option 4" }, "some options");
+    asyncAlertWindow->addButton ("OK",     1, juce::KeyPress (juce::KeyPress::returnKey, 0, 0));
+    asyncAlertWindow->addButton ("Cancel", 0, juce::KeyPress (juce::KeyPress::escapeKey, 0, 0));
+
+    // asyncAlertWindow->enterModalState(true, juce::ModalCallbackFunction::create([asyncAlertWindow, this] (int result) {}, true));
+
+    // juce::AlertWindow::showAsync (juce::MessageBoxOptions()
+    //                             .withIconType (juce::MessageBoxIconType::WarningIcon)
+    //                             .withTitle ("Alert Box")
+    //                             .withMessage (juce::String("Unable to listen TidalCycle for port ") + juce::String(p.DIRT_UPD_PORT))
+    //                             .withButton ("OK"),
+    //                         nullptr);    
 }

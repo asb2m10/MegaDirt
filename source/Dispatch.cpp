@@ -74,7 +74,6 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
 
     Event *event = new Event();
     for(int i=0;i<message.size();i+=2) {
-        
         if ( ! message[i].isString() ) {
             printf("Wrong message format\n");
             break;

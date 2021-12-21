@@ -1,4 +1,5 @@
 #include "Library.h"
+
 Library::Library() : juce::Thread("LibraryFinder") {
 }
 
@@ -31,6 +32,9 @@ void Library::run() {
         }
 
         for(auto soundFile : file.findChildFiles(juce::File::TypesOfFileToFind::findDirectories, false, "*")) {
+            if ( soundFile.getFileName().startsWith(".") )
+                continue;
+
             juce::Array<juce::File> soundList = soundFile.findChildFiles(juce::File::TypesOfFileToFind::findFiles, false, "*.wav");
             soundList.sort();
             juce::Array<SampleHolder> holders;

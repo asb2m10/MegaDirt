@@ -2,24 +2,14 @@
 
 #include "PluginProcessor.h"
 
-class TreeViewSorter {
-public:
-    static int compareElements(juce::TreeViewItem *i1, juce::TreeViewItem *i2) {
-        printf("compare\n");
-        return (i1->getUniqueName().compare(i2->getUniqueName()));
-    }
-};
-const TreeViewSorter treeViewSorter;
-
 class NoteTreeViewItem : public juce::TreeViewItem {
     juce::String label;
     juce::String *sound;
     int idx;
 public:
-
     NoteTreeViewItem(int idx, juce::String *sound, juce::String label) : idx(idx), sound(sound), label(label)  {}
 
-    juce::String getUniqueName() {
+    juce::String getUniqueName() const {
         return *sound;
     }
 
@@ -28,13 +18,10 @@ public:
     }
 
     void paintItem(juce::Graphics& g, int width, int height) {
-        // if this item is selected, fill it with a background colour..
-        if (isSelected())
-            g.fillAll (juce::Colours::blue.withAlpha (0.3f));
-        // use a "colour" attribute in the xml tag for this node to set the text colour..
-        //g.setColour();
+        if ( isSelected() )
+            g.fillAll (getOwnerView()->findColour(juce::ComboBox::outlineColourId));
+        g.setColour(getOwnerView()->findColour(juce::Label::textColourId));
         g.setFont(height * 0.7f);
-        // draw the xml element's tag name..
         g.drawText (label, 4, 0, width - 4, height, juce::Justification::centredLeft, true);
     }
 
@@ -47,7 +34,7 @@ class SoundTreeViewItem : public juce::TreeViewItem {
 public:
     SoundTreeViewItem(juce::String name, Library *lib) : soundName(name), library(lib) {}
 
-    juce::String getUniqueName() {
+    juce::String getUniqueName() const {
         return soundName;
     }
 
@@ -55,7 +42,7 @@ public:
         if ( isNowOpen ) {
             juce::Array<SampleHolder> &samples = library->content.getReference(soundName);
             for(int i=0;i<samples.size();i++) {
-                addSubItem(new NoteTreeViewItem(i, &soundName, soundName + juce::String(i) + juce::String(" / ") + samples[i].filename.getFileNameWithoutExtension() ));
+                addSubItem(new NoteTreeViewItem(i, &soundName, soundName + ":" + juce::String(i) + juce::String(" / ") + samples[i].filename.getFileNameWithoutExtension() ));
             }
         } else {
             clearSubItems();
@@ -67,13 +54,8 @@ public:
     }
 
     void paintItem (juce::Graphics& g, int width, int height) {
-        // if this item is selected, fill it with a background colour..
-        if (isSelected())
-            g.fillAll (juce::Colours::blue.withAlpha (0.3f));
-        // use a "colour" attribute in the xml tag for this node to set the text colour..
-        //g.setColour();
+        g.setColour(getOwnerView()->findColour(juce::Label::textColourId));
         g.setFont(height * 0.7f);
-        // draw the xml element's tag name..
         g.drawText (soundName, 4, 0, width - 4, height, juce::Justification::centredLeft, true);
     }    
 };
@@ -89,15 +71,7 @@ public:
         return true;
     }
 
-    void refresh() {
-        for(juce::HashMap<juce::String, juce::Array<SampleHolder>>::Iterator i(library->content); i.next();) {
-            if ( ! refContent.contains(i.getKey()) ) {
-                refContent.set(i.getKey(), 0);
-                SoundTreeViewItem *sound = new SoundTreeViewItem(i.getKey(), library);
-                addSubItemSorted(treeViewSorter, sound);
-            }
-        }
-    }
+    void refresh();
 };
 
 class OrbitViewer : public juce::Component {

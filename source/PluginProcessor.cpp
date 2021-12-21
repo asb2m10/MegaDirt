@@ -28,7 +28,7 @@ DirtAudioProcessor::DirtAudioProcessor()
                                                     0.0f,   // minimum value
                                                     1.0f,   // maximum value
                                                     0.5f)); // default value
-    dispatch.connect(57120);
+    dispatch.connect(DIRT_UPD_PORT);
 
     juce::PropertiesFile::Options options;
     options.applicationName = "MegaDirt";
