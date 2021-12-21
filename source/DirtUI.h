@@ -79,9 +79,36 @@ class OrbitViewer : public juce::Component {
 
 };
 
-class StatusBar : juce::Component {
+class StatusBar : public juce::Component {
 public:
-    void paint (juce::Graphics& g) override {
+    std::bitset<16> *orbitActivity;
+    std::bitset<16> *midiActivity;
 
+    void paint (juce::Graphics& g) override {
+        g.fillAll(findColour(juce::TextEditor::backgroundColourId));
+
+        int i = 0;
+        juce::String display;
+
+        for(int i=0; i<orbitActivity->size(); i++) {
+            if ( orbitActivity->test(i) ) {
+                display += "d" + juce::String(i+1) + " " ;
+            }
+        }
+
+        for(int i=0; i<midiActivity->size(); i++) {
+            if ( midiActivity->test(i) ) {
+                display += "m" + juce::String(i+1) + " " ;
+            }
+        }
+
+        orbitActivity->reset();
+        midiActivity->reset();
+
+        if ( display == "" ) 
+            return;
+
+        g.setColour(findColour(juce::Label::textColourId));
+        g.drawText (display, 0, 0, getWidth() - 4, getHeight() - 3, juce::Justification::centredRight, true);
     }
 };

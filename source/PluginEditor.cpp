@@ -53,6 +53,10 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     addAndMakeVisible(libraryContent);
     addAndMakeVisible(libraryPath);
 
+    statusBar.midiActivity = &(p.midiActivity);
+    statusBar.orbitActivity = &(p.orbitActivity);
+    addAndMakeVisible(statusBar);
+
     setSize(900, 500);
 
     startTimer(100);
@@ -74,7 +78,9 @@ DirtAudioProcessorEditor::~DirtAudioProcessorEditor() {
 
 void DirtAudioProcessorEditor::timerCallback() {
     if ( rootItem->refContent.size() != audioProcessor.library.content.size() )
-      rootItem->refresh();
+        rootItem->refresh();
+    
+    statusBar.repaint();
 }
 
 //==============================================================================
@@ -89,13 +95,15 @@ void DirtAudioProcessorEditor::paint(juce::Graphics &g) {
 void DirtAudioProcessorEditor::resized() {
     int width = getWidth();
     int height = getHeight();
+
     panicButton.setBounds(width-55, 5, 50, 30);
     libraryContent.setBounds(5, 3, 295, 25);
     libraryPath.setBounds(175, 3, 120, 25);
     libraryPath.onClick = [this] { this->setLibraryPath(); };
 
-    soundBrowser.setBounds(5, 35, 295, height - 55);
-    showLog.setBounds(305, (height - 20) / 2, width - 315, (height - 20) / 2);
+    statusBar.setBounds(5, height-30, width - 10, 25);
+    soundBrowser.setBounds(5, 35, 295, height - 85);
+    showLog.setBounds(305, (height - 20) / 2, width - 315, (height - 60) / 2);
 }
 
 void DirtAudioProcessorEditor::setLibraryPath() {

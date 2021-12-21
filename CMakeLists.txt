@@ -9,7 +9,7 @@ project(MEGADIRT VERSION 0.0.1)
 add_subdirectory(libs/JUCE)                    # If you've put JUCE in a subdirectory called JUCE
 
 add_definitions(-w)
-add_definitions(-D JUCER_ENABLE_GPL_MODE=1)
+add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
 include_directories(libs/JuceLockFreeQueue)
 
 # juce_set_vst2_sdk_path(...)

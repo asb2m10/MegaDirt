@@ -23,9 +23,7 @@ public:
     //==============================================================================
     void paint(juce::Graphics &) override;
     void resized() override;
-
     void playSound(juce::String soundName, int note);
-
     virtual void timerCallback() override;
 
 private:
@@ -39,6 +37,7 @@ private:
 
     juce::Label libraryContent;
     juce::TextButton libraryPath;
+    StatusBar statusBar;
 
     void setLibraryPath();
 
