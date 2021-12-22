@@ -21,7 +21,6 @@ public:
     ~DirtAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint(juce::Graphics &) override;
     void resized() override;
     void playSound(juce::String soundName, int note);
     virtual void timerCallback() override;

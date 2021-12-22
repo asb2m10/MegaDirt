@@ -20,7 +20,7 @@ const TreeViewSorter treeViewSorter;
 void NoteTreeViewItem::itemClicked(const juce::MouseEvent &e) {
     DirtAudioProcessorEditor *editor = getOwnerView()->findParentComponentOfClass<DirtAudioProcessorEditor>();
     jassert(editor);
-    printf("click %s\n", sound->toRawUTF8());
+    editor->playSound(*sound, idx);
 }
 
 void RootTreeViewItem::refresh() {
@@ -50,8 +50,12 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
 
     addAndMakeVisible(showLog);
     addAndMakeVisible(panicButton);
+    panicButton.onClick = [this] { this->audioProcessor.sampler.panic(); };
+
     addAndMakeVisible(libraryContent);
     addAndMakeVisible(libraryPath);
+    libraryPath.onClick = [this] { this->setLibraryPath(); };
+    
 
     statusBar.midiActivity = &(p.midiActivity);
     statusBar.orbitActivity = &(p.orbitActivity);
@@ -83,23 +87,13 @@ void DirtAudioProcessorEditor::timerCallback() {
     statusBar.repaint();
 }
 
-//==============================================================================
-void DirtAudioProcessorEditor::paint(juce::Graphics &g) {
-//    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
-
-    /*g.setColour (juce::Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);*/
-}
-
 void DirtAudioProcessorEditor::resized() {
     int width = getWidth();
     int height = getHeight();
 
-    panicButton.setBounds(width-55, 5, 50, 30);
+    panicButton.setBounds(width-55, 5, 50, 25);
     libraryContent.setBounds(5, 3, 295, 25);
     libraryPath.setBounds(175, 3, 120, 25);
-    libraryPath.onClick = [this] { this->setLibraryPath(); };
 
     statusBar.setBounds(5, height-30, width - 10, 25);
     soundBrowser.setBounds(5, 35, 295, height - 85);
@@ -129,4 +123,13 @@ void DirtAudioProcessorEditor::setLibraryPath() {
     //                             .withMessage (juce::String("Unable to listen TidalCycle for port ") + juce::String(p.DIRT_UPD_PORT))
     //                             .withButton ("OK"),
     //                         nullptr);    
+}
+
+void DirtAudioProcessorEditor::playSound(juce::String soundName, int note) {
+    Event *e = new Event();
+
+    e->sound = soundName;
+    e->note = note;
+
+    audioProcessor.dispatch.produce(e);
 }

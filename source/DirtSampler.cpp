@@ -29,7 +29,6 @@ void processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffer, int numSam
 
         float envValue = voice.getNextSample();
 
-        // TODO: process gain
         l *= envValue;
         r *= envValue;
 
@@ -73,8 +72,11 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
             voice.sampleEnd = event->end * sample->getLength();
             voice.pitchRatio = sample->getSampleRate() / sampleRate;
 
+            if ( playLength == 0 )
+                playLength = sample->getLength() * voice.pitchRatio;
+
             voice.envPos = 0;
-            voice.releasePos = playLength - 400;
+            voice.releasePos = playLength - 100;
             voice.adsr.reset();
             voice.adsr.noteOn();
             return;
@@ -90,6 +92,11 @@ void DirtSampler::advance(int samples) {
 }
 
 int DirtSampler::offset(int &sampleStart, Event *event) {
+    if ( event->cps == 0 ) {
+        sampleStart = 0;
+        return 0;
+    }
+
     double dest = (sampleRate / event->cps) * event->cycle;
     double recycle = (syncSamplePos - sampleLatency)/ sampleRate * 0.5625;
     //printf("pos %f-%f ", recycle, event->cycle);

@@ -70,6 +70,12 @@ public:
         }
     }
 
+    void panic() {
+        for (auto &voice: voices) {
+            voice.samplePos = voice.sampleEnd;
+        }
+    }
+
     int offset(int &sampleStart, Event *event);
 
     void setSampleRate(float rate);

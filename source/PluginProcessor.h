@@ -64,13 +64,13 @@ public:
         int targetBus = 0;
     };
 
-    Library library;
 
     friend DirtAudioProcessorEditor;
 
     const int DIRT_UPD_PORT = 57120;
 private:
     juce::AudioParameterFloat *gain;
+    Library library;
     Dispatch dispatch;
     DirtSampler sampler;
 
@@ -82,6 +82,8 @@ private:
 
     std::bitset<16> orbitActivity;
     std::bitset<16> midiActivity;
+
+    void panic();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

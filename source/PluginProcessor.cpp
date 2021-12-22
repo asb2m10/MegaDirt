@@ -156,23 +156,21 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
         if ( event->orbit > orbits.size() ) {
             printf("Orbit value to high %d\n", event->orbit);
-            continue;
-        }
-
-        orbitActivity.set(event->orbit, true);
-
-        if ( event->sound == SOUND_MIDI ) {
-            int targetNote = event->note + 64;
-            midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY), offsetStart);
-            midiMessages.addEvent(juce::MidiMessage(0x80+event->midichan, targetNote), playLength);
-            midiActivity.set(event->midichan, true);
         } else {
-            Sample *sample = library.get(event->sound, event->note);
-            if ( sample != nullptr ) {
-                sampler.play(event, sample, offsetStart, playLength);
-            } else {
-                printf("Sample %s:%i not found\n", event->sound.toRawUTF8(), (int) event->note);
-            }
+          if ( event->sound == SOUND_MIDI ) {
+              int targetNote = event->note + 64;
+              midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY), offsetStart);
+              midiMessages.addEvent(juce::MidiMessage(0x80+event->midichan, targetNote), offsetStart + playLength);
+              midiActivity.set(event->midichan, true);
+          } else {
+              orbitActivity.set(event->orbit, true);
+              Sample *sample = library.get(event->sound, event->note);
+              if ( sample != nullptr ) {
+                  sampler.play(event, sample, offsetStart, playLength);
+              } else {
+                  printf("Sample %s:%i not found\n", event->sound.toRawUTF8(), (int) event->note);
+              }
+          }
         }
         free(event);
         event = dispatch.consume();

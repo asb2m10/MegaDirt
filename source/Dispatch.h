@@ -11,9 +11,9 @@ struct Event {
     float begin = 0;
     float end = 1;
     float note = 0;
-    float cps;
-    float cycle;
-    float delta;
+    float cps = 0;
+    float cycle = 0;
+    float delta = 0;
 
     float legato = -1;
 
@@ -33,6 +33,10 @@ public:
     void oscBundleReceived (const juce::OSCBundle& bundle) override;
 
     Event *consume();
+
+    void produce(Event *event) {
+        queue.produce(event);
+    }
 
     bool isConnected() {
         return connected;
