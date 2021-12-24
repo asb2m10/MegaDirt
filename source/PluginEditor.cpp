@@ -27,7 +27,7 @@ void RootTreeViewItem::refresh() {
     for(juce::HashMap<juce::String, juce::Array<SampleHolder>>::Iterator i(library->content); i.next();) {
         if ( ! refContent.contains(i.getKey()) ) {
             refContent.set(i.getKey(), 0);
-            SoundTreeViewItem *sound = new SoundTreeViewItem(i.getKey(), library);
+            SoundTreeViewItem *sound = new SoundTreeViewItem(i.getKey(), &(library->content.getReference(i.getKey())));
             addSubItemSorted(treeViewSorter, sound);
         }
     }
@@ -56,7 +56,6 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     addAndMakeVisible(libraryPath);
     libraryPath.onClick = [this] { this->setLibraryPath(); };
     
-
     statusBar.midiActivity = &(p.midiActivity);
     statusBar.orbitActivity = &(p.orbitActivity);
     addAndMakeVisible(statusBar);
@@ -127,9 +126,7 @@ void DirtAudioProcessorEditor::setLibraryPath() {
 
 void DirtAudioProcessorEditor::playSound(juce::String soundName, int note) {
     Event *e = new Event();
-
     e->sound = soundName;
     e->note = note;
-
     audioProcessor.dispatch.produce(e);
 }

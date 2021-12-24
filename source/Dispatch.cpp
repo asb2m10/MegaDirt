@@ -8,12 +8,22 @@ const juce::StringRef PLAY_DELTA("delta");
 const juce::StringRef PLAY_ORBIT("orbit");
 const juce::StringRef PLAY_BEGIN("begin");
 const juce::StringRef PLAY_END("end");
-const juce::StringRef PLAY_NOTE("n");
+const juce::StringRef PLAY_N("n");
+const juce::StringRef PLAY_NOTE("note");
 const juce::StringRef PLAY_MIDICHAN("midichan");
 const juce::StringRef PLAY_CCN("ccn");
 const juce::StringRef PLAY_CCV("ccv");
 const juce::StringRef PLAY_LEGATO("legato");
+const juce::StringRef PLAY_UNIT("unit");
+const juce::StringRef PLAY_OCTAVE("octave");
+const juce::StringRef PLAY_SUSTAIN("sustain");
+
 const juce::OSCAddressPattern PLAY_PATTERN("/dirt/play");
+
+int note2int(juce::String note) {
+    char first = note.toLowerCase().toRawUTF8()[0] - 99;
+    return first;
+}
 
 juce::String showOSCMessageArgument (const juce::OSCArgument& arg) {
     juce::String typeAsString;
@@ -91,13 +101,20 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
             event->begin = message[i+1].getFloat32();
         } else if ( item == PLAY_END ) {
             event->end = message[i+1].getFloat32();
+        } else if ( item == PLAY_N ) {
+            if (message[i+1].isFloat32() )
+                event->n = message[i+1].getFloat32();
+            else 
+                event->n = message[i+1].getInt32();
         } else if ( item == PLAY_NOTE ) {
             if (message[i+1].isFloat32() )
                 event->note = message[i+1].getFloat32();
-            else 
+            else if (message[i+1].isInt32() )
                 event->note = message[i+1].getInt32();
-        } else if ( item == PLAY_ORBIT ) {
-            event->orbit = message[i+1].getInt32();
+            else 
+                event->note = note2int(message[i+1].getString());
+        } else if ( item == PLAY_UNIT ) {
+            event->unit = message[i+1].getString()[0];
         } else if ( item == PLAY_MIDICHAN ) {
             event->midichan = message[i+1].getFloat32();
         } else if ( item == PLAY_CPS ) {
@@ -108,12 +125,14 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
             event->delta = message[i+1].getFloat32();
         } else if ( item == PLAY_LEGATO ) {
             event->legato = message[i+1].getFloat32();
+        } else if ( item == PLAY_SUSTAIN ) {
+            event->sustain = message[i+1].getFloat32();
         } else {
             printf("Message key not found: %s %f\n", item.toRawUTF8(), message[i+1].getFloat32());
         }
     }
 
-    printf("%f %f\n", event->begin, event->end);
+    //printf("%f %f\n", event->begin, event->end);
     /**
         for (auto& arg : message) {
             st += showOSCMessageArgument(arg);

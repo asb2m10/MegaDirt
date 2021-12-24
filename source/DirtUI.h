@@ -5,9 +5,12 @@
 class NoteTreeViewItem : public juce::TreeViewItem {
     juce::String label;
     juce::String *sound;
+    SampleHolder *holder;
     int idx;
 public:
-    NoteTreeViewItem(int idx, juce::String *sound, juce::String label) : idx(idx), sound(sound), label(label)  {}
+    NoteTreeViewItem(int idx, juce::String *sound, SampleHolder *holder) : idx(idx), sound(sound), holder(holder)  {
+        label = *sound + ":" + juce::String(idx) + juce::String(" / ") + holder->filename.getFileNameWithoutExtension();
+    }
 
     juce::String getUniqueName() const {
         return *sound;
@@ -25,14 +28,20 @@ public:
         g.drawText (label, 4, 0, width - 4, height, juce::Justification::centredLeft, true);
     }
 
+    juce::String getTooltip() override {
+        Sample *sample = holder->sample.get();
+        float sampleLengthSec = sample->getLength() / sample->getSampleRate();
+        return juce::String(sample->getSampleRate()) + " / " + juce::String(sampleLengthSec);
+    }
+
     void itemClicked(const juce::MouseEvent &e);
 };
 
 class SoundTreeViewItem : public juce::TreeViewItem {
     juce::String soundName;
-    Library *library;
+    juce::Array<SampleHolder> *samples;
 public:
-    SoundTreeViewItem(juce::String name, Library *lib) : soundName(name), library(lib) {}
+    SoundTreeViewItem(juce::String name, juce::Array<SampleHolder> *samples) : soundName(name), samples(samples) {}
 
     juce::String getUniqueName() const {
         return soundName;
@@ -40,9 +49,8 @@ public:
 
     void itemOpennessChanged(bool isNowOpen) {
         if ( isNowOpen ) {
-            juce::Array<SampleHolder> &samples = library->content.getReference(soundName);
-            for(int i=0;i<samples.size();i++) {
-                addSubItem(new NoteTreeViewItem(i, &soundName, soundName + ":" + juce::String(i) + juce::String(" / ") + samples[i].filename.getFileNameWithoutExtension() ));
+            for(int i=0;i<samples->size();i++) {
+                addSubItem(new NoteTreeViewItem(i, &soundName, &(samples->getReference(i))));
             }
         } else {
             clearSubItems();

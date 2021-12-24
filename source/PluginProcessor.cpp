@@ -152,19 +152,19 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     Event *event = dispatch.consume();
     while(event != nullptr) {
         int offsetStart;
-        int playLength = sampler.offset(offsetStart, event);
+        int playLength = sampler.offset(offsetStart, event) * event->legato;
 
         if ( event->orbit > orbits.size() ) {
             printf("Orbit value to high %d\n", event->orbit);
         } else {
           if ( event->sound == SOUND_MIDI ) {
-              int targetNote = event->note + 64;
+              int targetNote = (event->note != 0 ? event->note : event->n) + 64;
               midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY), offsetStart);
-              midiMessages.addEvent(juce::MidiMessage(0x80+event->midichan, targetNote), offsetStart + playLength);
+              midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, 0), offsetStart + playLength);
               midiActivity.set(event->midichan, true);
           } else {
               orbitActivity.set(event->orbit, true);
-              Sample *sample = library.get(event->sound, event->note);
+              Sample *sample = library.get(event->sound, event->n);
               if ( sample != nullptr ) {
                   sampler.play(event, sample, offsetStart, playLength);
               } else {
