@@ -1,22 +1,6 @@
 #include "Dispatch.h"
 
-const juce::StringRef PLAY_S("s");
-const juce::StringRef PLAY_ID("_id_");
-const juce::StringRef PLAY_CPS("cps");
-const juce::StringRef PLAY_CYCLE("cycle");
-const juce::StringRef PLAY_DELTA("delta");
-const juce::StringRef PLAY_ORBIT("orbit");
-const juce::StringRef PLAY_BEGIN("begin");
-const juce::StringRef PLAY_END("end");
-const juce::StringRef PLAY_N("n");
-const juce::StringRef PLAY_NOTE("note");
-const juce::StringRef PLAY_MIDICHAN("midichan");
-const juce::StringRef PLAY_CCN("ccn");
-const juce::StringRef PLAY_CCV("ccv");
-const juce::StringRef PLAY_LEGATO("legato");
-const juce::StringRef PLAY_UNIT("unit");
-const juce::StringRef PLAY_OCTAVE("octave");
-const juce::StringRef PLAY_SUSTAIN("sustain");
+
 
 const juce::OSCAddressPattern PLAY_PATTERN("/dirt/play");
 
@@ -56,6 +40,24 @@ Dispatch::Dispatch() {
                                 
                                 });
     oscReceiver.addListener(this);
+
+    oscMapper.set("s", P_S);
+    oscMapper.set("note", P_NOTE);
+    oscMapper.set("n", P_N);
+    oscMapper.set("_id_", P_ID);
+    oscMapper.set("cps", P_CPS);
+    oscMapper.set("cycle", P_CYCLE);
+    oscMapper.set("delta", P_DELTA);
+    oscMapper.set("midichan", P_MIDICHAN);
+    oscMapper.set("ccn", P_CCN);
+    oscMapper.set("ccv", P_CCV);
+    oscMapper.set("legato", P_LEGATO);
+    oscMapper.set("unit", P_UNIT);
+    oscMapper.set("octave", P_OCTAVE);
+    oscMapper.set("sustain", P_SUSTAIN);
+    oscMapper.set("orbit", P_ORBIT);
+    oscMapper.set("gain", P_GAIN);
+    oscMapper.set("pan", P_PAN);
 }
 
 Dispatch::~Dispatch() {
@@ -89,60 +91,79 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
             break;
         }
 
-        juce::String item = message[i].getString();
+        juce::String key = message[i].getString();
+        juce::OSCArgument value = message[i+1];
 
-        if ( item == PLAY_ID ) {
-            // NOP
-        } else if ( item == PLAY_S ) {
-            event->sound = message[i+1].getString();
-        } else if ( item == PLAY_ORBIT ) {
-            event->orbit = message[i+1].getInt32();
-        } else if ( item == PLAY_BEGIN ) {
-            event->begin = message[i+1].getFloat32();
-        } else if ( item == PLAY_END ) {
-            event->end = message[i+1].getFloat32();
-        } else if ( item == PLAY_N ) {
-            if (message[i+1].isFloat32() )
-                event->n = message[i+1].getFloat32();
-            else 
-                event->n = message[i+1].getInt32();
-        } else if ( item == PLAY_NOTE ) {
-            if (message[i+1].isFloat32() )
-                event->note = message[i+1].getFloat32();
-            else if (message[i+1].isInt32() )
-                event->note = message[i+1].getInt32();
-            else 
-                event->note = note2int(message[i+1].getString());
-        } else if ( item == PLAY_UNIT ) {
-            event->unit = message[i+1].getString()[0];
-        } else if ( item == PLAY_MIDICHAN ) {
-            event->midichan = message[i+1].getFloat32();
-        } else if ( item == PLAY_CPS ) {
-	        event->cps = message[i+1].getFloat32();
-	    } else if ( item == PLAY_CYCLE ) {
-    	    event->cycle = message[i+1].getFloat32();
-	    } else if ( item == PLAY_DELTA ) {
-            event->delta = message[i+1].getFloat32();
-        } else if ( item == PLAY_LEGATO ) {
-            event->legato = message[i+1].getFloat32();
-        } else if ( item == PLAY_SUSTAIN ) {
-            event->sustain = message[i+1].getFloat32();
-        } else {
-            printf("Message key not found: %s %f\n", item.toRawUTF8(), message[i+1].getFloat32());
+        if ( !oscMapper.contains(key) ) {
+            printf("Key %s not mapped\n", key.toRawUTF8());
+            continue;
+        }
+
+        switch(oscMapper[key]) {
+            case P_ID:
+                // NOP
+            break;
+
+            case P_CPS:
+                event->cps = value.getFloat32();
+            break;
+
+            case P_CYCLE:
+                event->cycle = value.getFloat32();
+            break;
+
+            case P_DELTA:
+                event->delta = value.getFloat32();
+            break;
+
+            case P_S:
+                event->sound = value.getString();
+            break;
+
+            case P_N:
+                event->n = value.isFloat32() ? value.getFloat32() : value.getInt32();
+            break;
+
+            case P_NOTE:
+                if ( value.isString() ) 
+                    event->note = note2int(value.getString());
+                else
+                    event->note = value.isFloat32() ? value.getFloat32() : value.getInt32();
+            break;
+
+            case P_BEGIN:
+                event->begin = value.getFloat32();
+            break;
+
+            case P_END :
+                event->end = value.getFloat32();
+            break;
+
+            case P_ORBIT:
+                event->orbit = value.getInt32();
+            break;
+
+            case P_UNIT:
+                event->unit = value.getString()[0];
+            break;
+
+            case P_GAIN:
+                event->gain = value.getFloat32();
+            break;
+
+            case P_PAN:
+                event->pan = value.getFloat32();
+            break;
+
+            default:
+                printf("Key not configured %s\n", key.toRawUTF8());
         }
     }
-
-    //printf("%f %f\n", event->begin, event->end);
-    /**
-        for (auto& arg : message) {
-            st += showOSCMessageArgument(arg);
-        }
-        printf("%s\n", st.toRawUTF8());
-    */
+    
     queue.produce(event);
 }
 
-void Dispatch::oscBundleReceived (const juce::OSCBundle& bundle) {
+void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
     juce::OSCTimeTag timeTag = bundle.getTimeTag(); 
 
     for (auto& element : bundle) {

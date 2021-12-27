@@ -124,9 +124,9 @@ void DirtAudioProcessorEditor::setLibraryPath() {
     //                         nullptr);    
 }
 
-void DirtAudioProcessorEditor::playSound(juce::String soundName, int note) {
+void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {
     Event *e = new Event();
     e->sound = soundName;
-    e->note = note;
+    e->n = n;
     audioProcessor.dispatch.produce(e);
 }

@@ -22,7 +22,7 @@ public:
 
     //==============================================================================
     void resized() override;
-    void playSound(juce::String soundName, int note);
+    void playSound(juce::String soundName, int n);
     virtual void timerCallback() override;
 
 private:

@@ -20,8 +20,11 @@ struct Event {
     float n = 0;                // item sample index in sound
     char unit = ' ';            // unit for the pitch
 
+    // sample playback
     float begin = 0;            // begin to play on sample (in %)
     float end = 1;              // end to play on sample (in %)
+    float gain = 1;
+    float pan = 0.5;
 
     // event timing
     float legato = 1;           // event duration based on delta
@@ -33,6 +36,10 @@ struct Event {
     float ccv;                  // midi controller value
 };
 
+enum PlayType {
+    P_S, P_ID, P_CPS, P_CYCLE, P_DELTA, P_NOTE, P_N, P_BEGIN, P_END, P_MIDICHAN,
+    P_ORBIT, P_CCN, P_CCV, P_LEGATO, P_UNIT, P_OCTAVE, P_SUSTAIN, P_GAIN, P_PAN
+};
 
 class Dispatch : private juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback> {
 public:
@@ -67,4 +74,6 @@ private:
     void processPlay(const juce::OSCMessage& message);
     juce::LockFreeQueue<Event *> queue;
     juce::OSCReceiver oscReceiver;
+
+    juce::HashMap<juce::String, int> oscMapper;
 };
