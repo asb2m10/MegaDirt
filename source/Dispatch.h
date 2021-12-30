@@ -32,8 +32,8 @@ struct Event {
 
     // midi
     int midichan = 0;           // midi channel for event
-    float ccn;                  // midi controller value
-    float ccv;                  // midi controller value
+    float ccn = -1;             // midi controller value
+    float ccv = -1;             // midi controller value
 };
 
 enum PlayType {

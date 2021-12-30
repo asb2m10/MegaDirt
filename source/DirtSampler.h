@@ -4,6 +4,8 @@
 #include "Dispatch.h"
 #include <climits>
 
+class DirtAudioProcessor;
+
 struct DirtVoice { 
     int id;
 
@@ -66,8 +68,8 @@ class DirtSampler {
 
 public:
     DirtSampler() {
-        for(int i=0; i<voices.size();i++) {
-            juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
+        juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
+        for(int i=0; i<voices.size(); i++) {
             voices[i].id = i;
             voices[i].adsr.setParameters(envParameters);
         }
@@ -79,8 +81,11 @@ public:
         }
     }
 
-    int offset(int &sampleStart, Event *event);
+    friend DirtAudioProcessor;
 
+    int offset(int &sampleStart, Event *event);
+    int offset(float cps, float cycle);
+    
     void setSampleRate(float rate);
     void processBlock(juce::AudioBuffer<float> &buffer, int numSamples);
     void play(Event *event, Sample *sample, int offsetStart, int playLength);

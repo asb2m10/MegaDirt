@@ -151,8 +151,8 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     Event *event = dispatch.consume();
     while(event != nullptr) {
-        int offsetStart;
-        int playLength = sampler.offset(offsetStart, event) * event->legato;
+        int offsetStart = sampler.offset(event->cps, event->cycle);
+        int playLength = (event->sustain != 0 ? event->sustain : event->delta * event->legato) * sampler.sampleRate;
 
         if ( event->orbit > orbits.size() ) {
             printf("Orbit value to high %d\n", event->orbit);
@@ -172,6 +172,11 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
               }
           }
         }
+
+        if ( event->ccv != -1 && event->ccn != -1 ) {
+            midiMessages.addEvent(juce::MidiMessage(0xb0+event->midichan, event->ccn, event->ccv), offsetStart);
+        }
+
         free(event);
         event = dispatch.consume();
     }
