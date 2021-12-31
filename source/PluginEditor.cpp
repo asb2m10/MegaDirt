@@ -128,5 +128,7 @@ void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {
     Event *e = new Event();
     e->sound = soundName;
     e->n = n;
+
+    audioProcessor.library.lookup(soundName, n);
     audioProcessor.dispatch.produce(e);
 }

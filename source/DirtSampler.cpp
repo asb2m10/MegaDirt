@@ -30,8 +30,8 @@ void processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffer, int numSam
 
         float envValue = voice.getNextSample() * voice.gain;
 
-        l *= envValue;
-        r *= envValue;
+        l *= (envValue * voice.panl);
+        r *= (envValue * voice.panr);
 
         if (outR != nullptr) {
             *outL++ += l;
@@ -77,6 +77,8 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
                 playLength = sample->getLength() * voice.pitchRatio;
 
             voice.gain = event->gain;
+            voice.panl = event->pan < 0.5 ? 1 : 2 - event->pan * 2;
+            voice.panr = event->pan > 0.5 ? 1 : event->pan * 2;
             voice.envPos = 0;
             voice.releasePos = playLength - 100;
             voice.adsr.reset();

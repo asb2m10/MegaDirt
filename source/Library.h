@@ -49,19 +49,24 @@ public:
     void findContent(juce::String samplePath);
     bool lookup(juce::String name, int note);
     Sample *get(juce::String name, int note);
-    juce::Array<SampleHolder> &get(juce::String sound) {
-        return content.getReference(sound);
-    }
 
     void shutdown() {
         stopThread(200);
     }
 
     juce::HashMap<juce::String, juce::Array<SampleHolder>> content;
+
+    void setLazyLoading(bool lazyLoad) {
+        lazyLoading = lazyLoad;
+    }
+
 private:
+    bool lazyLoading = true;
     int numSamples = 0;
     int numSounds = 0;
 
     void run() override;
     juce::StringArray soundPaths;
+
+    juce::AudioFormatManager manager;    
 };

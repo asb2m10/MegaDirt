@@ -20,7 +20,9 @@ DirtAudioProcessor::DirtAudioProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
               .withOutput("Out-3-4", juce::AudioChannelSet::stereo(), false)
               .withOutput("Out-5-6", juce::AudioChannelSet::stereo(), false)
-              .withOutput("Out-7-8", juce::AudioChannelSet::stereo(), false))
+              .withOutput("Out-7-8", juce::AudioChannelSet::stereo(), false)),
+        dispatch(&library)
+              
 #endif
 {
   addParameter(gain = new juce::AudioParameterFloat("gain", // parameterID

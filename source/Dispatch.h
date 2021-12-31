@@ -1,8 +1,9 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
-#include "juce_osc/juce_osc.h"
+#include <juce_osc/juce_osc.h>
 #include "LockFreeQueue.h"
+#include "Library.h"
 
 struct Event {
     juce::String sound;
@@ -19,6 +20,7 @@ struct Event {
     float note = 0;             // item note, if sample will be pitched
     float n = 0;                // item sample index in sound
     char unit = ' ';            // unit for the pitch
+    float speed = 1;
 
     // sample playback
     float begin = 0;            // begin to play on sample (in %)
@@ -38,12 +40,12 @@ struct Event {
 
 enum PlayType {
     P_S, P_ID, P_CPS, P_CYCLE, P_DELTA, P_NOTE, P_N, P_BEGIN, P_END, P_MIDICHAN,
-    P_ORBIT, P_CCN, P_CCV, P_LEGATO, P_UNIT, P_OCTAVE, P_SUSTAIN, P_GAIN, P_PAN
+    P_ORBIT, P_CCN, P_CCV, P_LEGATO, P_UNIT, P_OCTAVE, P_SUSTAIN, P_GAIN, P_PAN, P_SPEED
 };
 
 class Dispatch : private juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback> {
 public:
-    Dispatch();
+    Dispatch(Library *lib);
     ~Dispatch();
 
     void connect(int port);
@@ -76,4 +78,5 @@ private:
     juce::OSCReceiver oscReceiver;
 
     juce::HashMap<juce::String, int> oscMapper;
+    Library *library;
 };

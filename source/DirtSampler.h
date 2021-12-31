@@ -45,7 +45,8 @@ struct DirtVoice {
     float envPos;
     float releasePos;
 
-    float pan = 0.5;
+    float panl = 1;
+    float panr = 1;
     float gain = 1;
 
     juce::ADSR adsr;

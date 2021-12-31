@@ -1,16 +1,17 @@
 #include "Library.h"
 
 Library::Library() : juce::Thread("LibraryFinder") {
+    manager.registerBasicFormats();
 }
 
 Sample *Library::get(juce::String name, int note) {
     if ( ! content.contains(name) )
         return nullptr;
 
-    if ( content[name].size() < note )
-        return nullptr;
 
-    return content[name][note].sample.get();
+    note = note % content[name].size();
+
+    return content.getReference(name).getReference(note).sample.get();
 }
 
 void Library::findContent(juce::String samplePath) {
@@ -21,9 +22,6 @@ void Library::findContent(juce::String samplePath) {
 }
 
 void Library::run() {
-    juce::AudioFormatManager manager;
-    manager.registerBasicFormats();
-
     for(auto root : soundPaths) {
         juce::File file(root);
         if (! file.isDirectory()) {
@@ -41,12 +39,13 @@ void Library::run() {
             for(int i=0; i<soundList.size();i++) {
                 SampleHolder holder;
                 holder.filename = soundList[i];
-
-                juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
-                if ( reader != nullptr ) {
-                    numSamples++;
-                    holder.sample.reset(new Sample(*reader, 120));
-                    delete reader;
+                if ( !lazyLoading ) {
+                    juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
+                    if ( reader != nullptr ) {
+                        numSamples++;
+                        holder.sample.reset(new Sample(*reader, 120));
+                        delete reader;
+                    }
                 }
                 holders.add(holder);
             }
@@ -61,6 +60,24 @@ void Library::run() {
     printf("Finished reading %d samples\n", numSamples);
 }
 
-/*bool Library::lookup(juce::String name, int note) {
-    return content.contains(hashName(name));
-}*/
+bool Library::lookup(juce::String name, int note) {
+    if (! content.contains(name))
+        return false;
+
+    juce::Array<SampleHolder> &holders = content.getReference(name);
+
+
+    note = note % holders.size();
+    SampleHolder &holder = holders.getReference(note);
+
+    if ( holder.sample.get() == nullptr ) {
+        juce::AudioFormatReader *reader = manager.createReaderFor(holder.filename);
+        if ( reader != nullptr ) {
+            numSamples++;
+            holder.sample.reset(new Sample(*reader, 120));
+            delete reader;
+        }
+    }
+
+    return true;
+}

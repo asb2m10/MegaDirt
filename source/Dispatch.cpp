@@ -32,7 +32,7 @@ juce::String showOSCMessageArgument (const juce::OSCArgument& arg) {
 }
 
 
-Dispatch::Dispatch() {
+Dispatch::Dispatch(Library *lib) : library(lib)  {
     oscReceiver.registerFormatErrorHandler ([this] (const char* data, int dataSize)
                                 {
                                 /*  String(dataSize)
@@ -58,6 +58,9 @@ Dispatch::Dispatch() {
     oscMapper.set("orbit", P_ORBIT);
     oscMapper.set("gain", P_GAIN);
     oscMapper.set("pan", P_PAN);
+    oscMapper.set("begin", P_BEGIN);
+    oscMapper.set("end", P_END);
+    oscMapper.set("speed", P_SPEED);
 }
 
 Dispatch::~Dispatch() {
@@ -88,7 +91,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
     for(int i=0;i<message.size();i+=2) {
         if ( ! message[i].isString() ) {
             printf("Wrong message format\n");
-            break;
+            continue;
         }
 
         juce::String key = message[i].getString();
@@ -143,6 +146,10 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
                 event->orbit = value.getInt32();
             break;
 
+            case P_SPEED: 
+                event->speed = value.getFloat32();
+            break;
+
             case P_UNIT:
                 event->unit = value.getString()[0];
             break;
@@ -155,11 +162,27 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
                 event->pan = value.getFloat32();
             break;
 
+            case P_CCN:
+                event->ccn = value.getFloat32();
+            break;
+
+            case P_CCV:
+                event->ccv = value.getFloat32();
+            break;
+
             default:
                 printf("Key not configured %s\n", key.toRawUTF8());
         }
     }
     
+    if ( event->sound != juce::StringRef("midi") ) {
+        if ( ! library->lookup(event->sound, event->n) ) {
+            printf("Sound %s not found.\n", event->sound.toRawUTF8() );
+            free(event);
+            return;
+        }
+    } 
+
     queue.produce(event);
 }
 
