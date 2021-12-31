@@ -8,9 +8,7 @@ Sample *Library::get(juce::String name, int note) {
     if ( ! content.contains(name) )
         return nullptr;
 
-
     note = note % content[name].size();
-
     return content.getReference(name).getReference(note).sample.get();
 }
 
@@ -65,7 +63,6 @@ bool Library::lookup(juce::String name, int note) {
         return false;
 
     juce::Array<SampleHolder> &holders = content.getReference(name);
-
 
     note = note % holders.size();
     SampleHolder &holder = holders.getReference(note);
