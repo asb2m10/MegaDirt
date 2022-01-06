@@ -10,6 +10,7 @@ struct Event {
 
     // id
     int orbit = 0;
+    int serialId = 0;
 
     // timing **
     float cps = 0;              // cycle-per-seconds (tempo)
@@ -70,6 +71,18 @@ public:
     bool isConnected() {
         return connected;
     }
+
+    /**
+     * @brief Flush event if the DSP queue is re-sync
+     * 
+     */
+    void flushEvent() {
+        Event *e = consume();
+        while(e != nullptr) {
+            free(e);
+            e = consume();
+        }
+    }
 private:
     bool connected = false;
 
@@ -79,4 +92,6 @@ private:
 
     juce::HashMap<juce::String, int> oscMapper;
     Library *library;
+
+    int serialId = 0;
 };

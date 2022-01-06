@@ -58,6 +58,7 @@ DirtAudioProcessor::DirtAudioProcessor()
 
 DirtAudioProcessor::~DirtAudioProcessor() {
     library.shutdown();
+    dispatch.flushEvent();
 }
 
 //==============================================================================
@@ -114,6 +115,7 @@ void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
   sampler.setSampleRate(sampleRate);
+  dispatch.flushEvent();
 }
 
 void DirtAudioProcessor::releaseResources() {
@@ -147,7 +149,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     if (playhead != NULL) {
         juce::AudioPlayHead::CurrentPositionInfo posInfo;
         playhead->getCurrentPosition(posInfo);
-        printf("%fn", posInfo.ppqPosition);
+        //printf("%fn", posInfo.ppqPosition);
         // posInfo.timeInSeconds;
     }
 

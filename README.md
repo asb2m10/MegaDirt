@@ -1,4 +1,4 @@
-# MegaDirt
+![MegaDirt](asset/logo.png)
 MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://github.com/tidalcycles/tidal). It is meant to be run into a DAW as a plugin.
 
 To be fair, SuperDirt is a departure from the "classical sampler" where everything is attached to a midi event. I think this is a huge asset and should be explored more. You can use [TidalCycles](https://tidalcycles.org) to trigger samples into different ways since MegaDirt uses the same OSC protocol.
@@ -37,5 +37,5 @@ Building MegaDirt should be straight forward. The building process is supposed t
     cd MegaDirt
     mkdir build
     cd build
-    cmake ..       # add `-G Xcode` if you want to use Xcode and build it afterwards
+    cmake ..       # add `-G Xcode` if you want to use Apple Xcode and build it afterwards
     make

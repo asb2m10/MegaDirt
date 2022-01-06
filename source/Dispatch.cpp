@@ -1,7 +1,5 @@
 #include "Dispatch.h"
 
-
-
 const juce::OSCAddressPattern PLAY_PATTERN("/dirt/play");
 
 int note2int(juce::String note) {
@@ -88,6 +86,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
     }
 
     Event *event = new Event();
+    event->serialId = ++serialId;
     for(int i=0;i<message.size();i+=2) {
         if ( ! message[i].isString() ) {
             printf("Wrong message format\n");

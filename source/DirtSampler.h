@@ -8,6 +8,7 @@ class DirtAudioProcessor;
 
 struct DirtVoice { 
     int id;
+    int serialId;
 
     Sample *sample;
 
@@ -67,6 +68,10 @@ class DirtSampler {
     const float EVENT_LATENCY = 0.3;
     void advance(int samples);
 
+    void processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffer, int numSamples);
+
+    double lastEvent;
+    double lastSyncEvent;
 public:
     DirtSampler() {
         juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
