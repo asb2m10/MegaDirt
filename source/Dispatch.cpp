@@ -188,6 +188,8 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
 void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
     juce::OSCTimeTag timeTag = bundle.getTimeTag(); 
 
+    //printf("Delta %i\n", timeTag.toTime().toMilliseconds() - juce::Time::getCurrentTime().toMilliseconds());
+
     for (auto& element : bundle) {
         if (element.isMessage()) {
             const juce::OSCMessage& message = element.getMessage();
