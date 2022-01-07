@@ -54,6 +54,8 @@ DirtAudioProcessor::DirtAudioProcessor()
     }
 
     library.findContent(samplePath);
+
+    isActive = false;
 }
 
 DirtAudioProcessor::~DirtAudioProcessor() {
@@ -116,11 +118,16 @@ void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // initialisation that you need..
   sampler.setSampleRate(sampleRate);
   dispatch.flushEvent();
+
+  isActive = true;
 }
 
 void DirtAudioProcessor::releaseResources() {
   // When playback stops, you can use this as an opportunity to free up any
   // spare memory, etc.
+
+  sampler.panic();
+  isActive = false;
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -162,9 +169,10 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             printf("Orbit value to high %d\n", event->orbit);
         } else {
           if ( event->sound == SOUND_MIDI ) {
-              int targetNote = (event->note != 0 ? event->note : event->n) + 64;
+              int targetNote = (event->note != 0 ? event->note : event->n) + 48;
               midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY), offsetStart);
               midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, 0), offsetStart + playLength);
+              printf("delta %i", playLength);
               midiActivity.set(event->midichan, true);
           } else {
               orbitActivity.set(event->orbit, true);
@@ -185,6 +193,10 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         event = dispatch.consume();
     }
 
+
+    if ( midiMessages.getNumEvents() != 0 ) {
+      printf("num events %i\n", midiMessages.getNumEvents());
+    }
     sampler.processBlock(buffer, numSample);
     buffer.applyGain(*gain);
 }
