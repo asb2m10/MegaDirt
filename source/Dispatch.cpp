@@ -79,7 +79,7 @@ Event *Dispatch::consume() {
     return event;
 }
 
-void Dispatch::processPlay(const juce::OSCMessage& message) {
+void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
     if ( message.size() % 2 ) {
         printf("Wrong message size\n");
         return;
@@ -87,6 +87,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
 
     Event *event = new Event();
     event->serialId = ++serialId;
+    event->time = time;
     for(int i=0;i<message.size();i+=2) {
         if ( ! message[i].isString() ) {
             printf("Wrong message format\n");
@@ -169,6 +170,10 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
                 event->ccv = value.getFloat32();
             break;
 
+            case P_LEGATO:
+                event->legato = value.getFloat32();
+            break;
+
             default:
                 printf("Key not configured %s\n", key.toRawUTF8());
         }
@@ -186,15 +191,19 @@ void Dispatch::processPlay(const juce::OSCMessage& message) {
 }
 
 void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
-    juce::OSCTimeTag timeTag = bundle.getTimeTag(); 
+    double timeTag = bundle.getTimeTag().toTime().toMilliseconds();
 
     //printf("Delta %i\n", timeTag.toTime().toMilliseconds() - juce::Time::getCurrentTime().toMilliseconds());
+
+    if ( timeTag < juce::Time::getCurrentTime().toMilliseconds() ) {
+        printf("Warning: event in the past\n");
+    }
 
     for (auto& element : bundle) {
         if (element.isMessage()) {
             const juce::OSCMessage& message = element.getMessage();
             if ( message.getAddressPattern() == PLAY_PATTERN ) {
-                processPlay(message);
+                processPlay(message, timeTag);
                 continue;
             }
         } else if (element.isBundle()) {

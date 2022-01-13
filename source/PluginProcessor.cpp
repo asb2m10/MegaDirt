@@ -11,6 +11,14 @@
 
 const juce::StringRef SOUND_MIDI("midi");
 
+class EventSorter {
+public:
+    static int compareElements(Event *i1, Event *i2) {
+        return (i1->time < i2->time) ? -1 : ((i2->time < i1->time) ? 1 : 0);
+    }
+};
+const EventSorter eventSorter;
+
 //==============================================================================
 DirtAudioProcessor::DirtAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -142,6 +150,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     int numSample = buffer.getNumSamples();
+    double currentTm = juce::Time::currentTimeMillis();
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -160,43 +169,67 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         // posInfo.timeInSeconds;
     }
 
-    Event *event = dispatch.consume();
-    while(event != nullptr) {
-        int offsetStart = sampler.offset(event->cps, event->cycle);
-        int playLength = (event->sustain != 0 ? event->sustain : event->delta * event->legato) * sampler.sampleRate;
+    // get the event from the network thread
+    for(Event *e = dispatch.consume(); e != nullptr; e = dispatch.consume()) {
+        pendingEv.addSorted(eventSorter, e);
+    }
 
-        if ( event->orbit > orbits.size() ) {
-            printf("Orbit value to high %d\n", event->orbit);
-        } else {
-          if ( event->sound == SOUND_MIDI ) {
-              int targetNote = (event->note != 0 ? event->note : event->n) + 48;
-              midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, DEFAULT_MIDI_VELOCITY), offsetStart);
-              midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, 0), offsetStart + playLength);
-              printf("delta %i", playLength);
-              midiActivity.set(event->midichan, true);
-          } else {
-              orbitActivity.set(event->orbit, true);
-              Sample *sample = library.get(event->sound, event->n);
-              if ( sample != nullptr ) {
-                  sampler.play(event, sample, offsetStart, playLength);
-              } else {
-                  printf("Sample %s:%i not found\n", event->sound.toRawUTF8(), (int) event->note);
-              }
-          }
-        }
+    juce::Array<Event *> noteOff;
+
+    // identify event to be played
+    int executeEvent = 0;
+    double tmEnd = currentTm + (numSample * 1000 / sampler.sampleRate);
+    for(auto event: pendingEv) {
+        if ( event->time >= tmEnd )
+            break;
+
+        executeEvent++;
+
+        // start of event in sample
+        int offsetStart = juce::jmax((double) 0, event->time - currentTm) * (sampler.sampleRate * 0.001);
+
+        // event duration in seconds
+        double playLength = (event->sustain != 0 ? event->sustain : event->delta * event->legato);
 
         if ( event->ccv != -1 && event->ccn != -1 ) {
             midiMessages.addEvent(juce::MidiMessage(0xb0+event->midichan, event->ccn, event->ccv), offsetStart);
+            midiActivity.set(event->midichan, true);              
+        }
+
+        if ( event->sound == SOUND_MIDI ) {
+            int targetNote = (event->note != 0 ? event->note : event->n) + 48;
+            midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, event->velocity), offsetStart);              
+
+            if ( event->velocity != 0 ) {
+                printf("%f on  %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
+                event->time += (playLength * 1000) - 1;
+                event->velocity = 0;
+                midiActivity.set(event->midichan, true);              
+                noteOff.add(event);
+                continue;
+            } else {
+                printf("%f off %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
+            }
+        } else {
+            Sample *sample = library.get(event->sound, event->n);
+            if ( sample != nullptr ) {
+                sampler.play(event, sample, offsetStart, playLength * sampler.sampleRate);
+            } else {
+                printf("Sample %s:%i not found\n", event->sound.toRawUTF8(), (int) event->note);
+            }
+            orbitActivity.set(event->orbit, true);
         }
 
         free(event);
-        event = dispatch.consume();
     }
 
+    pendingEv.removeRange(0, executeEvent);
 
-    if ( midiMessages.getNumEvents() != 0 ) {
-      printf("num events %i\n", midiMessages.getNumEvents());
+    // reinsert note off
+    for(auto e: noteOff) {
+        pendingEv.addSorted(eventSorter, e);
     }
+
     sampler.processBlock(buffer, numSample);
     buffer.applyGain(*gain);
 }

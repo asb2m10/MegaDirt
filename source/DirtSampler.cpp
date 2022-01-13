@@ -59,7 +59,6 @@ void DirtSampler::processBlock(juce::AudioBuffer<float> &buffer, int numSamples)
             processVoice(voice, buffer, numSamples);
         }
     }
-    advance(numSamples);
 }
 
 void DirtSampler::setSampleRate(float rate) {

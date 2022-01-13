@@ -75,9 +75,7 @@ private:
     DirtSampler sampler;
 
     juce::ApplicationProperties appProp;
-
-    const int DEFAULT_MIDI_VELOCITY = 100;
-
+    
     std::array<Orbit, 16> orbits;
 
     std::bitset<16> orbitActivity;
@@ -86,6 +84,8 @@ private:
     void panic();
 
     bool isActive;
+
+    juce::Array<Event *> pendingEv;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

@@ -7,6 +7,7 @@
 
 struct Event {
     juce::String sound;
+    double time;               // item time in milliseconds
 
     // id
     int orbit = 0;
@@ -15,7 +16,6 @@ struct Event {
     // timing **
     float cps = 0;              // cycle-per-seconds (tempo)
     float cycle = 0;            // current event cycles
-    float delta = 0;            // item duration in seconds (based on cycle)
 
     // note / pitch
     float note = 0;             // item note, if sample will be pitched
@@ -30,13 +30,17 @@ struct Event {
     float pan = 0.5;
 
     // event timing
+    float delta = 0;            // item duration in seconds (based on cycle)
     float legato = 1;           // event duration based on delta
     float sustain = 0;          // absolute event time (superseed delta) in seconds
 
     // midi
     int midichan = 0;           // midi channel for event
+    int velocity = 100;
     float ccn = -1;             // midi controller value
     float ccv = -1;             // midi controller value
+
+    double debug;
 };
 
 enum PlayType {
@@ -86,7 +90,7 @@ public:
 private:
     bool connected = false;
 
-    void processPlay(const juce::OSCMessage& message);
+    void processPlay(const juce::OSCMessage& message, double time);
     juce::LockFreeQueue<Event *> queue;
     juce::OSCReceiver oscReceiver;
 
