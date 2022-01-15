@@ -60,6 +60,10 @@ public:
         lazyLoading = lazyLoad;
     }
 
+    juce::String getSamplePath() {
+        return samplePath;
+    }
+
 private:
     bool lazyLoading = true;
     int numSamples = 0;
@@ -67,6 +71,6 @@ private:
 
     void run() override;
     juce::StringArray soundPaths;
-
+    juce::String samplePath;
     juce::AudioFormatManager manager;    
 };

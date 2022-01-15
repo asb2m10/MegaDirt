@@ -12,8 +12,9 @@ Sample *Library::get(juce::String name, int note) {
     return content.getReference(name).getReference(note).sample.get();
 }
 
-void Library::findContent(juce::String samplePath) {
-    soundPaths = juce::StringArray::fromTokens(samplePath, ":", "");
+void Library::findContent(juce::String sp) {
+    samplePath = sp;
+    soundPaths = juce::StringArray::fromTokens(sp, ":", "");
     // restart indexer
     if ( stopThread(200) )
         startThread();
@@ -23,7 +24,7 @@ void Library::run() {
     for(auto root : soundPaths) {
         juce::File file(root);
         if (! file.isDirectory()) {
-            printf("Path %s doesn't exists\n", file.getFullPathName().toRawUTF8());
+            //juce::Logger::writeToLog("Path doesn't exists", file.getFullPathName().toRawUTF8());
             continue;
         }
 

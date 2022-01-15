@@ -94,7 +94,7 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
 
         // TODO: voice steal
     }
-    printf("voice full\n");
+    juce::Logger::writeToLog("voice full");
 }
 
 void DirtSampler::advance(int samples) {

@@ -32,6 +32,7 @@ private:
     juce::TreeView soundBrowser;
     juce::TextButton panicButton;
     juce::TextEditor showLog;
+    int logLines = 0;
     RootTreeViewItem *rootItem;
 
     juce::Label libraryContent;
@@ -39,6 +40,8 @@ private:
     StatusBar statusBar;
 
     void setLibraryPath();
+
+    juce::AlertWindow *settingsWindow;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessorEditor)
 };

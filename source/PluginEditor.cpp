@@ -36,7 +36,7 @@ void RootTreeViewItem::refresh() {
 //==============================================================================
 DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) : 
     AudioProcessorEditor(&p), audioProcessor(p), soundBrowser("SoundBrowser"), panicButton("Panic"), showLog("showLog"),
-       libraryContent("LibraryContent", "Library Content"), libraryPath("Set Library Path...") {
+       libraryContent("LibraryContent", "Library Content"), libraryPath("Settings...") {
 
     rootItem = new RootTreeViewItem(&p.library);
 
@@ -61,14 +61,13 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     addAndMakeVisible(statusBar);
 
     setSize(900, 500);
-
-    startTimer(100);
+    startTimer(300);
 
     if ( ! p.dispatch.isConnected() ) {
         juce::AlertWindow::showAsync (juce::MessageBoxOptions()
                                     .withIconType (juce::MessageBoxIconType::WarningIcon)
                                     .withTitle ("Alert Box")
-                                    .withMessage (juce::String("Unable to listen TidalCycle for port ") + juce::String(p.DIRT_UPD_PORT))
+                                    .withMessage (juce::String("Unable to listen TidalCycle for port ") + juce::String(p.DIRT_UDP_PORT))
                                     .withButton ("OK"),
                                 nullptr);
     }
@@ -83,6 +82,12 @@ void DirtAudioProcessorEditor::timerCallback() {
     if ( rootItem->refContent.size() != audioProcessor.library.content.size() )
         rootItem->refresh();
     
+    if ( logLines != audioProcessor.logger.content.size() ) {
+        logLines = audioProcessor.logger.content.size();
+        showLog.setText(audioProcessor.logger.content.joinIntoString(""));
+        showLog.moveCaretToEnd();
+    }
+
     statusBar.repaint();
 }
 
@@ -103,25 +108,16 @@ void DirtAudioProcessorEditor::setLibraryPath() {
     juce::PropertiesFile *prop = audioProcessor.appProp.getUserSettings();
     juce::String samplePath = prop->getValue("samplePath", "");
 
-    return;
+    settingsWindow = new juce::AlertWindow("Settings", "", juce::AlertWindow::NoIcon);
+    settingsWindow->addTextEditor("path", audioProcessor.library.getSamplePath(), "Sample paths (seperator path ':')");
+    settingsWindow->addComboBox("lazy", { "Enable", "Disable" }, "Sample lazy load");
+    settingsWindow->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey, 0, 0));
+    settingsWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey, 0, 0));
 
-    juce::AlertWindow *asyncAlertWindow = new juce::AlertWindow ("AlertWindow demo..",
-                                                        "This AlertWindow has a couple of extra components added to show how to add drop-down lists and text entry boxes.",
-                                                        juce::MessageBoxIconType::QuestionIcon);
-
-    asyncAlertWindow->addTextEditor ("text", "enter some text here", "text field:");
-    asyncAlertWindow->addComboBox ("option", { "option 1", "option 2", "option 3", "option 4" }, "some options");
-    asyncAlertWindow->addButton ("OK",     1, juce::KeyPress (juce::KeyPress::returnKey, 0, 0));
-    asyncAlertWindow->addButton ("Cancel", 0, juce::KeyPress (juce::KeyPress::escapeKey, 0, 0));
-
-    // asyncAlertWindow->enterModalState(true, juce::ModalCallbackFunction::create([asyncAlertWindow, this] (int result) {}, true));
-
-    // juce::AlertWindow::showAsync (juce::MessageBoxOptions()
-    //                             .withIconType (juce::MessageBoxIconType::WarningIcon)
-    //                             .withTitle ("Alert Box")
-    //                             .withMessage (juce::String("Unable to listen TidalCycle for port ") + juce::String(p.DIRT_UPD_PORT))
-    //                             .withButton ("OK"),
-    //                         nullptr);    
+    settingsWindow->enterModalState(true, juce::ModalCallbackFunction::create([this](int r) {
+        if (r) {
+        }
+    }), true);
 }
 
 void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {

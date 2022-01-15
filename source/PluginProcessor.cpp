@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <stdarg.h>
 
 const juce::StringRef SOUND_MIDI("midi");
 
@@ -18,6 +19,15 @@ public:
     }
 };
 const EventSorter eventSorter;
+
+void DirtLogger::printf(const char *fmt, ...) {
+    char output[4096];
+    va_list argptr;
+    va_start(argptr, fmt);
+    vsnprintf(output, 4095, fmt, argptr);
+    va_end(argptr);
+    writeToLog(output);
+}
 
 //==============================================================================
 DirtAudioProcessor::DirtAudioProcessor()
@@ -33,12 +43,21 @@ DirtAudioProcessor::DirtAudioProcessor()
               
 #endif
 {
-  addParameter(gain = new juce::AudioParameterFloat("gain", // parameterID
+    addParameter(gain = new juce::AudioParameterFloat("gain", // parameterID
                                                     "Gain", // parameter name
                                                     0.0f,   // minimum value
                                                     1.0f,   // maximum value
                                                     0.5f)); // default value
-    dispatch.connect(DIRT_UPD_PORT);
+
+    juce::Logger::setCurrentLogger(&logger);
+
+    dispatch.connect(DIRT_UDP_PORT);
+
+    if ( dispatch.isConnected() ) {
+        logger.printf("*** MegaDirt listening to Tidal messages on port: %i", DIRT_UDP_PORT);
+    } else {
+        logger.printf("ERROR: unable to listen to UDP port: %i", DIRT_UDP_PORT);
+    }
 
     juce::PropertiesFile::Options options;
     options.applicationName = "MegaDirt";
@@ -58,17 +77,20 @@ DirtAudioProcessor::DirtAudioProcessor()
             // Linux
             samplePath = home.getChildFile(".local/share/SuperCollider/downloaded-quarks/Dirt-Samples").getFullPathName();
         }
-        printf("Trying default path for Dirt-Sample: %s\n", samplePath.toRawUTF8());
+        logger.printf("Trying default path for Dirt-Sample: %s", samplePath.toRawUTF8());
     }
 
     library.findContent(samplePath);
-
-    isActive = false;
+    // isActive = false;
 }
 
 DirtAudioProcessor::~DirtAudioProcessor() {
     library.shutdown();
     dispatch.flushEvent();
+    for(auto event: pendingEv) {
+        free(event);
+    }
+    juce::Logger::setCurrentLogger(nullptr);
 }
 
 //==============================================================================
@@ -201,21 +223,21 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, event->velocity), offsetStart);              
 
             if ( event->velocity != 0 ) {
-                printf("%f on  %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
+                //logger.printf("%f on  %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
                 event->time += (playLength * 1000) - 1;
                 event->velocity = 0;
                 midiActivity.set(event->midichan, true);              
                 noteOff.add(event);
                 continue;
             } else {
-                printf("%f off %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
+                //logger.printf("%f off %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
             }
         } else {
             Sample *sample = library.get(event->sound, event->n);
             if ( sample != nullptr ) {
                 sampler.play(event, sample, offsetStart, playLength * sampler.sampleRate);
             } else {
-                printf("Sample %s:%i not found\n", event->sound.toRawUTF8(), (int) event->note);
+                logger.printf("Sample %s:%i not found", event->sound.toRawUTF8(), (int) event->note);
             }
             orbitActivity.set(event->orbit, true);
         }

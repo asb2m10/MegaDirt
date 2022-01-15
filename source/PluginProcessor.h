@@ -17,6 +17,18 @@
 
 class DirtAudioProcessorEditor;
 
+// Dirty cheap logger
+class DirtLogger : public juce::Logger {
+public:
+    juce::StringArray content;
+    void printf(const char *fmt, ...);
+    void logMessage(const juce::String &message) override {
+        if (content.size() > 4096) 
+            content.removeRange(0, 2048);
+        content.add(message + "\n");
+    }
+};
+
 //==============================================================================
 /**
  */
@@ -64,10 +76,9 @@ public:
         int targetBus = 0;
     };
 
-
     friend DirtAudioProcessorEditor;
 
-    const int DIRT_UPD_PORT = 57120;
+    const int DIRT_UDP_PORT = 57120;
 private:
     juce::AudioParameterFloat *gain;
     Library library;
@@ -86,6 +97,7 @@ private:
     bool isActive;
 
     juce::Array<Event *> pendingEv;
+    DirtLogger logger;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

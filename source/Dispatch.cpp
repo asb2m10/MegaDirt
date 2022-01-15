@@ -81,7 +81,7 @@ Event *Dispatch::consume() {
 
 void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
     if ( message.size() % 2 ) {
-        printf("Wrong message size\n");
+        juce::Logger::writeToLog("Wrong OSC message size");
         return;
     }
 
@@ -90,7 +90,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
     event->time = time;
     for(int i=0;i<message.size();i+=2) {
         if ( ! message[i].isString() ) {
-            printf("Wrong message format\n");
+            juce::Logger::writeToLog("Wrong OSC message format");
             continue;
         }
 
@@ -98,7 +98,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
         juce::OSCArgument value = message[i+1];
 
         if ( !oscMapper.contains(key) ) {
-            printf("Key %s not mapped\n", key.toRawUTF8());
+            juce::Logger::writeToLog(juce::String("Key not mapped: ") + key);
             continue;
         }
 
@@ -175,13 +175,13 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
             break;
 
             default:
-                printf("Key not configured %s\n", key.toRawUTF8());
+                juce::Logger::writeToLog(juce::String("Key not configured: " + key));
         }
     }
     
     if ( event->sound != juce::StringRef("midi") ) {
         if ( ! library->lookup(event->sound, event->n) ) {
-            printf("Sound %s not found.\n", event->sound.toRawUTF8() );
+            juce::Logger::writeToLog(juce::String("Sound not found: ") + event->sound);
             free(event);
             return;
         }
@@ -196,7 +196,7 @@ void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
     //printf("Delta %i\n", timeTag.toTime().toMilliseconds() - juce::Time::getCurrentTime().toMilliseconds());
 
     if ( timeTag < juce::Time::getCurrentTime().toMilliseconds() ) {
-        printf("Warning: event in the past\n");
+        juce::Logger::writeToLog("Warning: event in the past");
     }
 
     for (auto& element : bundle) {
@@ -206,8 +206,6 @@ void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
                 processPlay(message, timeTag);
                 continue;
             }
-        } else if (element.isBundle()) {
-            printf("Caline un bundle dans bundle\n");
         }
     }
 }
