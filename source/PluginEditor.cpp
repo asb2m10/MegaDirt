@@ -18,9 +18,19 @@ public:
 const TreeViewSorter treeViewSorter;
 
 void NoteTreeViewItem::itemClicked(const juce::MouseEvent &e) {
-    DirtAudioProcessorEditor *editor = getOwnerView()->findParentComponentOfClass<DirtAudioProcessorEditor>();
-    jassert(editor);
-    editor->playSound(*sound, idx);
+    if (e.mods.getCurrentModifiers().isRightButtonDown() ) {
+        juce::PopupMenu menu;
+
+        menu.addItem("Copy sound name to clipboard", [this] { 
+            juce::SystemClipboard::copyTextToClipboard(*(this->sound) + ":" + juce::String(this->idx)); });
+        menu.addItem("Open folder", [this] { 
+            this->holder->filename.revealToUser(); });
+        menu.showMenuAsync(juce::PopupMenu::Options());
+    } else {
+        DirtAudioProcessorEditor *editor = getOwnerView()->findParentComponentOfClass<DirtAudioProcessorEditor>();
+        jassert(editor);        
+        editor->playSound(*sound, idx);
+    }
 }
 
 void RootTreeViewItem::refresh() {
@@ -57,7 +67,7 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     libraryPath.onClick = [this] { this->setLibraryPath(); };
     
     statusBar.midiActivity = &(p.midiActivity);
-    statusBar.orbitActivity = &(p.orbitActivity);
+    statusBar.patternActivity = &(p.patternActivity);
     addAndMakeVisible(statusBar);
 
     setSize(900, 500);

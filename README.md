@@ -4,7 +4,7 @@ MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformati
 
 To be fair, SuperDirt is a departure from the "classical sampler" where everything is attached to a midi event. I think this is a huge asset and should be explored more. You can use [TidalCycles](https://tidalcycles.org) to trigger samples into different ways since MegaDirt uses the same OSC protocol.
 
-*MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory. *
+* MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory. *
 
 MegaDirt might have those advantage over SuperDirt on Supercolider:
 * Easier installation. MegaDirt can also be run as a standalone application.
@@ -26,7 +26,6 @@ MegaDirt might have those advantage over SuperDirt on Supercolider:
 - [x] Lazy loading of sampling file
 - [ ] Configurable sample path
 - [ ] Sync DAW playhead with tidal cycles
-- [ ] Reconfigure OSC timing latency based on Tidal target values
 - [ ] Character (a5, c, as) note names
 - [ ] Windows Dirt sample directory
 

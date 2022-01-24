@@ -87,9 +87,9 @@ private:
 
     juce::ApplicationProperties appProp;
     
-    std::array<Orbit, 16> orbits;
+    //std::array<Orbit, 16> orbits;
 
-    std::bitset<16> orbitActivity;
+    std::bitset<16> patternActivity;
     std::bitset<16> midiActivity;
 
     void panic();

@@ -239,7 +239,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             } else {
                 logger.printf("Sample %s:%i not found", event->sound.toRawUTF8(), (int) event->note);
             }
-            orbitActivity.set(event->orbit, true);
+            patternActivity.set(event->id, true);
         }
 
         free(event);

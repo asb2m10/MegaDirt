@@ -3,8 +3,43 @@
 const juce::OSCAddressPattern PLAY_PATTERN("/dirt/play");
 
 int note2int(juce::String note) {
-    char first = note.toLowerCase().toRawUTF8()[0] - 99;
-    return first;
+    const char *ref = note.toLowerCase().toRawUTF8();
+    int ret = 0;
+
+    switch(ref[0]) {
+        case 'c' : case 'd' : case 'e' : case 'f' : case 'g' :
+            ret = ref[0] - 'c';
+        break;
+        case 'a' : case 'b' :
+            ret = ref[0] - 'a' - 2;
+        break;
+        default:
+            juce::Logger::writeToLog("Invalid note reference: " + note);
+            return 0;
+    }
+
+    for(int i=1;ref[i] != 0; i++) {
+        if ( isdigit(ref[i]) ) {
+            int target = ref[i] - '0';
+            return ret - (target * 12) - 60;
+        }
+
+        switch(ref[i]) {
+            case 's' : case '#' :
+                ret++;
+            break;
+
+            case 'f' :
+                ret--;
+            break;
+
+            default:
+                juce::Logger::writeToLog("Invalid note reference: " + note);
+                return ret;            
+        }
+    }
+
+    return ret;
 }
 
 juce::String showOSCMessageArgument (const juce::OSCArgument& arg) {
@@ -104,7 +139,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
 
         switch(oscMapper[key]) {
             case P_ID:
-                // NOP
+                event->id = value.getString().getIntValue() - 1;
             break;
 
             case P_CPS:

@@ -89,7 +89,7 @@ class OrbitViewer : public juce::Component {
 
 class StatusBar : public juce::Component {
 public:
-    std::bitset<16> *orbitActivity;
+    std::bitset<16> *patternActivity;
     std::bitset<16> *midiActivity;
 
     void paint (juce::Graphics& g) override {
@@ -98,8 +98,8 @@ public:
         int i = 0;
         juce::String display;
 
-        for(int i=0; i<orbitActivity->size(); i++) {
-            if ( orbitActivity->test(i) ) {
+        for(int i=0; i<patternActivity->size(); i++) {
+            if ( patternActivity->test(i) ) {
                 display += "d" + juce::String(i+1) + " " ;
             }
         }
@@ -110,7 +110,7 @@ public:
             }
         }
 
-        orbitActivity->reset();
+        patternActivity->reset();
         midiActivity->reset();
 
         if ( display == "" ) 

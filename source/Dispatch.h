@@ -10,6 +10,7 @@ struct Event {
     double time;               // item time in milliseconds
 
     // id
+    int id = 0;
     int orbit = 0;
     int serialId = 0;
 
