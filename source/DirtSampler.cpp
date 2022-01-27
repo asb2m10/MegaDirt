@@ -16,8 +16,8 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
 
     const float* const inL = voice.sample->getBuffer().getReadPointer (0);
     const float* const inR = voice.sample->getBuffer().getNumChannels() > 1 ? voice.sample->getBuffer().getReadPointer(1) : nullptr;
-    float* outL = buffer.getWritePointer (0, startOutput);
-    float* outR = buffer.getNumChannels() > 1 ? buffer.getWritePointer(1, startOutput) : nullptr;
+    float* outL = buffer.getWritePointer(voice.orbit, startOutput);
+    float* outR = buffer.getWritePointer(voice.orbit+1, startOutput);
 
     while (--numSamples >= 0) {
         /*if ( voice.samplePos == voice.sampleStart ) {
@@ -87,6 +87,7 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
             voice.panr = event->pan > 0.5 ? 1 : event->pan * 2;
             voice.envPos = 0;
             voice.releasePos = playLength - 100;
+            voice.orbit = event->orbit * 2;
             voice.adsr.reset();
             voice.adsr.noteOn();
             return;

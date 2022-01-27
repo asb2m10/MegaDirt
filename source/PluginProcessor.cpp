@@ -235,6 +235,11 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         } else {
             Sample *sample = library.get(event->sound, event->n);
             if ( sample != nullptr ) {
+                if ( event->orbit * 2 > totalNumOutputChannels ) {
+                    logger.printf("Orbit %d not set in DAW. See plugin output bus.", event->orbit);
+                    event->orbit = 0;
+                }
+
                 sampler.play(event, sample, offsetStart, playLength * sampler.sampleRate);
             } else {
                 logger.printf("Sample %s:%i not found", event->sound.toRawUTF8(), (int) event->note);
