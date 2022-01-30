@@ -126,6 +126,9 @@ void DirtAudioProcessorEditor::setLibraryPath() {
 
     settingsWindow->enterModalState(true, juce::ModalCallbackFunction::create([this](int r) {
         if (r) {
+            juce::String path = this->settingsWindow->getTextEditorContents("path");
+            juce::ComboBox *cb = this->settingsWindow->getComboBoxComponent("lazy");
+            this->audioProcessor.setSamplePath(path, cb->getSelectedId() == 1);
         }
     }), true);
 }

@@ -20,12 +20,6 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
     float* outR = buffer.getNumChannels() > 1 ? buffer.getWritePointer(1, startOutput) : nullptr;
 
     while (--numSamples >= 0) {
-        /*if ( voice.samplePos == voice.sampleStart ) {
-            double dest = syncSamplePos + (buffer.getNumSamples() - numSamples);
-            printf("%i %f delta %f == %f\n", voice.serialId, syncSamplePos, dest - lastEvent, dest-lastSyncEvent);
-            lastEvent = dest;
-        }*/
-
         auto pos = (int) voice.samplePos;
         auto alpha = (float) (voice.samplePos - pos);
         auto invAlpha = 1.0f - alpha;
@@ -48,6 +42,7 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
 
         voice.samplePos += voice.pitchRatio;
 
+        // TODO: do not base this as sampleEnd
         if (voice.samplePos >= voice.sampleEnd )
             break;
     }
@@ -100,33 +95,6 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
 void DirtSampler::advance(int samples) {
     syncSamplePos += samples;
 }
-
-// int DirtSampler::offset(int &sampleStart, Event *event) {
-//     if ( event->cps == 0 ) {
-//         sampleStart = 0;
-//         return 0;
-//     }
-
-//     double dest = (sampleRate / event->cps) * event->cycle;
-//     double recycle = (syncSamplePos - sampleLatency)/ sampleRate * 0.5625;
-//     //printf("pos %f-%f ", recycle, event->cycle);
-
-//     if ( dest < syncSamplePos ) {
-//         printf(" ** Sample to soon %f %f delta %f\n", syncSamplePos, dest, dest - syncSamplePos);
-//         syncSamplePos = dest - sampleLatency;
-//         sampleStart = sampleLatency;
-//     } else if (  dest > syncSamplePos + sampleLatency * 2) {
-//         printf(" ** Sample to far %f %f delta %f\n", syncSamplePos, dest, dest - syncSamplePos);
-//         syncSamplePos = dest;
-//         sampleStart = sampleLatency;
-//     } else {
-//         int target = dest - syncSamplePos;
-//         //printf("ok diff %f diffdiff %i\n", recycle-event->cycle, target);
-//         sampleStart = target;
-//     }
-
-//     return (dest - syncSamplePos) + sampleRate * event->delta;
-// }
 
 int DirtSampler::offset(float cps, float cycle) {
     if ( cps == 0 )

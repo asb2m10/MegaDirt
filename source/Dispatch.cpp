@@ -231,7 +231,8 @@ void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
     //printf("Delta %i\n", timeTag.toTime().toMilliseconds() - juce::Time::getCurrentTime().toMilliseconds());
 
     if ( timeTag < juce::Time::getCurrentTime().toMilliseconds() ) {
-        juce::Logger::writeToLog("Warning: event in the past");
+        juce::Logger::writeToLog("Warning: ignoring event in the past");
+        return;
     }
 
     for (auto& element : bundle) {

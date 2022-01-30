@@ -99,6 +99,8 @@ private:
     juce::Array<Event *> pendingEv;
     DirtLogger logger;
 
+    void setSamplePath(juce::String paths, bool lazyLoading);
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)
 };

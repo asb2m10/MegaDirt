@@ -80,7 +80,10 @@ DirtAudioProcessor::DirtAudioProcessor()
         logger.printf("Trying default path for Dirt-Sample: %s", samplePath.toRawUTF8());
     }
 
+    bool lazyLoading = prop->getBoolValue("lazyLoad", true);
+    library.setLazyLoading(lazyLoading);
     library.findContent(samplePath);
+
     // isActive = false;
 }
 
@@ -276,6 +279,15 @@ void DirtAudioProcessor::setStateInformation(const void *data, int sizeInBytes) 
   // You should use this method to restore your parameters from this memory
   // block, whose contents will have been created by the getStateInformation()
   // call.
+}
+
+void DirtAudioProcessor::setSamplePath(juce::String paths, bool lazyLoading) {
+    juce::PropertiesFile *prop = appProp.getUserSettings();
+    prop->setValue("samplePath", paths);
+    prop->setValue("lazyLoad", lazyLoading);
+    appProp.saveIfNeeded();
+    library.setLazyLoading(lazyLoading);
+    library.findContent(paths);
 }
 
 //==============================================================================

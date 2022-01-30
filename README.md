@@ -39,3 +39,5 @@ Building MegaDirt should be straight forward. The building process is supposed t
     cd build
     cmake ..       # add `-G Xcode` if you want to use Apple Xcode and build it afterwards
     make
+
+
