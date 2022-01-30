@@ -22,11 +22,12 @@ MegaDirt might have those advantage over SuperDirt on Supercolider:
 - [x] osc msg sustain - event absolute time
 - [x] osc msg pan - sample pan
 - [x] osc msg ccn / ccv - midi controller change
-- [ ] osc msg speed - sample speed
 - [x] Lazy loading of sampling file
-- [ ] Configurable sample path
+- [x] Configurable sample path
+- [x] Character (a5, c, as) note names
+- [x] Multichannel orbit support (based on plugin bus)
+- [ ] osc msg speed - sample speed
 - [ ] Sync DAW playhead with tidal cycles
-- [ ] Character (a5, c, as) note names
 - [ ] Windows Dirt sample directory
 
 ### Bulding
