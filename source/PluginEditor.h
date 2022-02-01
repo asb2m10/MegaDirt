@@ -39,6 +39,9 @@ private:
     juce::TextButton libraryPath;
     StatusBar statusBar;
 
+    juce::ToggleButton debugEvent;
+    juce::ToggleButton redirectOrbit;
+
     void setLibraryPath();
 
     juce::AlertWindow *settingsWindow;

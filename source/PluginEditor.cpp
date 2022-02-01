@@ -70,6 +70,14 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     statusBar.patternActivity = &(p.patternActivity);
     addAndMakeVisible(statusBar);
 
+    debugEvent.setButtonText("Enable event debug");
+    debugEvent.setToggleState(p.debugEvent, false);
+    debugEvent.onClick = [this] { this->audioProcessor.debugEvent = this->debugEvent.getToggleState(); };
+    addAndMakeVisible(debugEvent);
+
+    redirectOrbit.setButtonText("Send all orbit output to Bus 1");
+    addAndMakeVisible(redirectOrbit);
+
     setSize(900, 500);
     startTimer(300);
 
@@ -105,13 +113,18 @@ void DirtAudioProcessorEditor::resized() {
     int width = getWidth();
     int height = getHeight();
 
+    int belowLog = (height - 20) / 2;
+
     panicButton.setBounds(width-55, 5, 50, 25);
     libraryContent.setBounds(5, 3, 295, 25);
     libraryPath.setBounds(175, 3, 120, 25);
 
     statusBar.setBounds(5, height-30, width - 10, 25);
     soundBrowser.setBounds(5, 35, 295, height - 85);
-    showLog.setBounds(305, (height - 20) / 2, width - 315, (height - 60) / 2);
+    redirectOrbit.setBounds(305, 5, 200, 25);
+
+    showLog.setBounds(305, belowLog, width - 315, (height - 60) / 2);
+    debugEvent.setBounds(305, belowLog - 30, 200, 25);
 }
 
 void DirtAudioProcessorEditor::setLibraryPath() {

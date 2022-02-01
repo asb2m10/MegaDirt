@@ -36,11 +36,12 @@ DirtAudioProcessor::DirtAudioProcessor()
           BusesProperties()
               .withInput("Input", juce::AudioChannelSet::stereo(), true)
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-              .withOutput("Out-3-4", juce::AudioChannelSet::stereo(), false)
-              .withOutput("Out-5-6", juce::AudioChannelSet::stereo(), false)
-              .withOutput("Out-7-8", juce::AudioChannelSet::stereo(), false)),
+              .withOutput("Out-3-4", juce::AudioChannelSet::stereo(), false)),
         dispatch(&library)
               
+        // 
+        // .withOutput("Out-5-6", juce::AudioChannelSet::stereo(), false)
+        // .withOutput("Out-7-8", juce::AudioChannelSet::stereo(), false)              
 #endif
 {
     addParameter(gain = new juce::AudioParameterFloat("gain", // parameterID
@@ -126,13 +127,13 @@ bool DirtAudioProcessor::isMidiEffect() const {
 }
 
 double DirtAudioProcessor::getTailLengthSeconds() const {
-  return 0.0;
+    return 0.0;
 }
 
 int DirtAudioProcessor::getNumPrograms() {
-  return 1; // NB: some hosts don't cope very well if you tell them there are 0
-            // programs, so this should be at least 1, even if you're not really
-            // implementing programs.
+    return 1; // NB: some hosts don't cope very well if you tell them there are 0
+              // programs, so this should be at least 1, even if you're not really
+              // implementing programs.
 }
 
 int DirtAudioProcessor::getCurrentProgram() { return 0; }
@@ -140,7 +141,7 @@ int DirtAudioProcessor::getCurrentProgram() { return 0; }
 void DirtAudioProcessor::setCurrentProgram(int index) {}
 
 const juce::String DirtAudioProcessor::getProgramName(int index) {
-  return {};
+    return {};
 }
 
 void DirtAudioProcessor::changeProgramName(int index, const juce::String &newName) {}
@@ -165,8 +166,14 @@ void DirtAudioProcessor::releaseResources() {
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool DirtAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
+    if (layouts.getMainInputChannelSet()  == juce::AudioChannelSet::disabled()
+     || layouts.getMainOutputChannelSet() == juce::AudioChannelSet::disabled())
+        return false;
+ 
+    return true;
+
   // FIX THIS, (see how it works with auval)
-  return true;
+  // return true;
 }
 #endif
 
@@ -196,7 +203,18 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     // get the event from the network thread
     for(Event *e = dispatch.consume(); e != nullptr; e = dispatch.consume()) {
-        pendingEv.addSorted(eventSorter, e);
+        if ( e->time + 500 < currentTm ) {
+            logger.printf("Flushing late event from dsp thread.");
+            free(e);
+        } else {
+            if ( debugEvent ) {
+                logger.printf("time:%f s:%s cps:%f cycle:%f note:%f n:%f delta:%f legato:%f midichan:%f",
+                    e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->legato, e->midichan);
+            }
+
+
+            pendingEv.addSorted(eventSorter, e);
+        }
     }
 
     juce::Array<Event *> noteOff;
@@ -299,4 +317,25 @@ void DirtAudioProcessor::setSamplePath(juce::String paths, bool lazyLoading) {
 // This creates new instances of the plugin..
 juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
   return new DirtAudioProcessor();
+}
+
+bool DirtAudioProcessor::canApplyBusCountChange (bool isInput, bool isAddingBuses, juce::AudioProcessor::BusProperties& outNewBusProperties) {
+    //logger.printf("bus added %s", outNewBusProperties.busName.toRawUTF8());
+    return true;
+}
+
+void DirtAudioProcessor::numChannelsChanged() {
+    //logger.printf("num channel %d", getTotalNumOutputChannels());
+}
+
+void DirtAudioProcessor::numBusesChanged() {
+    //logger.printf("num bus: %d", getTotalNumOutputChannels());
+}
+
+void DirtAudioProcessor::processorLayoutsChanged() {
+    //logger.printf("processor layour change %d", getTotalNumOutputChannels());
+}
+
+bool DirtAudioProcessor::canAddBus(bool isInput) const {
+    return true;
 }

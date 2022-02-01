@@ -79,6 +79,12 @@ public:
     friend DirtAudioProcessorEditor;
 
     const int DIRT_UDP_PORT = 57120;
+
+    bool canApplyBusCountChange (bool isInput, bool isAddingBuses, BusProperties& outNewBusProperties) override;
+    void processorLayoutsChanged() override;
+    void numBusesChanged() override;
+    void numChannelsChanged() override;
+    bool canAddBus(bool) const override;
 private:
     juce::AudioParameterFloat *gain;
     Library library;
@@ -98,6 +104,8 @@ private:
 
     juce::Array<Event *> pendingEv;
     DirtLogger logger;
+
+    bool debugEvent = false;
 
     void setSamplePath(juce::String paths, bool lazyLoading);
 
