@@ -1,16 +1,22 @@
 ![MegaDirt](assets/logo.png)
 
-MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://github.com/tidalcycles/tidal). It is meant to be run into a DAW as a plugin.
+MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://github.com/tidalcycles/tidal). It is meant to be run into a DAW as a plugin (VST3) for those who wants a minimal sampler with midi output.
 
 To be fair, SuperDirt is a departure from the "classical sampler" where everything is attached to a midi event. I think this is a huge asset and should be explored more. You can use [TidalCycles](https://tidalcycles.org) to trigger samples into different ways since MegaDirt uses the same OSC protocol.
 
-* MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory. *
+* MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory.
 
-MegaDirt might have those advantage over SuperDirt on Supercolider:
-* Easier installation. MegaDirt can also be run as a standalone application.
-* Easier audio routing from DAW and use DAW audio plugins
+### MegaDirt might have those advantage over SuperDirt on Supercolider
+* Easier installation. MegaDirt can also be run as a standalone application
+* Easier audio routing from DAW (orbits are plugin buses) and use DAW audio plugins
 * Easier midi routing from DAW and use DAW midi plugins
 * TidalCycle events can be in sync with the DAW timeline (in progress)
+
+## Things to know
+
+* Orbits are output buses of the plugin. We are limited to 4 bus (orbits). Those might have to be enable the extra ones from the DAW.
+* Audio FX (#room) are not yet supported
+* Renoise doesn't seems to render plugin if the editor window is closed
 
 ### What is implemented from SuperDirt
 
@@ -40,5 +46,3 @@ Building MegaDirt should be straight forward. The building process is supposed t
     cd build
     cmake ..       # add `-G Xcode` if you want to use Apple Xcode and build it afterwards
     make
-
-
