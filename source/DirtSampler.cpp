@@ -81,21 +81,31 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
             voice.startOffset = offsetStart;
             voice.sample = sample;
 
+            voice.samplePos = event->begin * sample->getLength();
+            voice.sampleEnd = event->end * sample->getLength();
 
-            if (event->speed != 1)
-                voice.pitchRatio = event->speed;
-            else
-                voice.pitchRatio = std::pow(2.0, (event->note / 12.0));
-            voice.pitchRatio *= sample->getSampleRate() / sampleRate;
+            switch ( event->unit ) {
+                case 'c' :
+                    voice.pitchRatio = (voice.sampleEnd - voice.samplePos) / playLength;
+                    voice.pitchRatio *= event->speed;
+                break; 
 
-            if ( voice.pitchRatio < 0 ) {
-                voice.samplePos = event->end * sample->getLength();
-                voice.sampleEnd = event->begin * sample->getLength();
-            } else {
-                voice.samplePos = event->begin * sample->getLength();
-                voice.sampleEnd = event->end * sample->getLength();
+                case 's':
+                    if ( event->speed != 1 )
+                        voice.pitchRatio = (voice.sampleEnd - voice.samplePos) / event->speed * sampleRate;
+                    else
+                        voice.pitchRatio = 1;
+                break;
+
+                default:
+                    voice.pitchRatio = std::pow(2.0, (event->note / 12.0)) * event->speed;
+                    voice.pitchRatio *= sample->getSampleRate() / sampleRate;
             }
 
+            if ( voice.pitchRatio < 0 ) {
+                std::swap(voice.samplePos, voice.sampleEnd);
+            }
+            
             if ( playLength == 0 )
                 playLength = abs(sample->getLength() * voice.pitchRatio);
             voice.eventEnd = playLength;

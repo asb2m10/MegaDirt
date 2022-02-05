@@ -21,7 +21,7 @@ struct Event {
     // note / pitch
     float note = 0;             // item note, if sample will be pitched
     float n = 0;                // item sample index in sound
-    char unit = ' ';            // unit for the pitch
+    char unit = 'r';            // unit for the pitch
     float speed = 1;
 
     // sample playback

@@ -33,6 +33,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 - [x] Configurable sample path
 - [x] Character (a5, c, a#, gb) note names
 - [x] Multichannel orbit support (based on plugin bus)
+- [x] Support loop units ('r' and 'c')
 - [ ] Sync DAW playhead with tidal cycles
 - [ ] Windows Dirt sample directory
 
