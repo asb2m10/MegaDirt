@@ -75,8 +75,10 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     debugEvent.onClick = [this] { this->audioProcessor.debugEvent = this->debugEvent.getToggleState(); };
     addAndMakeVisible(debugEvent);
 
-    redirectOrbit.setButtonText("Send all orbit output to Bus 1");
-    addAndMakeVisible(redirectOrbit);
+    forceObrit0.setButtonText("Send all orbits output to Bus 1");
+    forceObrit0.setToggleState(p.forceObrit0, false);
+    forceObrit0.onClick = [this] { this->audioProcessor.forceObrit0 = this->forceObrit0.getToggleState(); };
+    addAndMakeVisible(forceObrit0);
 
     setSize(900, 500);
     startTimer(300);
@@ -121,7 +123,7 @@ void DirtAudioProcessorEditor::resized() {
 
     statusBar.setBounds(5, height-30, width - 10, 25);
     soundBrowser.setBounds(5, 35, 295, height - 85);
-    redirectOrbit.setBounds(305, 5, 200, 25);
+    forceObrit0.setBounds(305, 5, 200, 25);
 
     showLog.setBounds(305, belowLog, width - 315, (height - 60) / 2);
     debugEvent.setBounds(305, belowLog - 30, 200, 25);

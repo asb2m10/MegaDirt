@@ -45,6 +45,7 @@ struct DirtVoice {
     // Enveloppe
     float envPos;
     float releasePos;
+    float eventEnd;
 
     float panl = 1;
     float panr = 1;
@@ -53,10 +54,19 @@ struct DirtVoice {
     juce::ADSR adsr;
 
     inline float getNextSample() {
+        envPos++;
         if ( envPos > releasePos )
             adsr.noteOff();
+        if ( envPos >= eventEnd )
+            active = false;
+            
         return adsr.getNextSample();
     }
+
+    /*
+     * @brief Tells if the voice should be rendered.
+     */
+    bool active = false;
 };
 
 class DirtSampler {

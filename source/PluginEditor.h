@@ -40,7 +40,7 @@ private:
     StatusBar statusBar;
 
     juce::ToggleButton debugEvent;
-    juce::ToggleButton redirectOrbit;
+    juce::ToggleButton forceObrit0;
 
     void setLibraryPath();
 

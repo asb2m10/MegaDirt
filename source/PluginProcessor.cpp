@@ -34,14 +34,13 @@ DirtAudioProcessor::DirtAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(
           BusesProperties()
-              .withInput("Input", juce::AudioChannelSet::stereo(), true)
-              .withOutput("Output", juce::AudioChannelSet::stereo(), true)
-              .withOutput("Out-3-4", juce::AudioChannelSet::stereo(), false)),
+              .withOutput("Orbit0", juce::AudioChannelSet::stereo(), true)
+              .withOutput("Orbit1", juce::AudioChannelSet::stereo(), false)
+              .withOutput("Orbit2", juce::AudioChannelSet::stereo(), false)
+              .withOutput("Orbit3", juce::AudioChannelSet::stereo(), false)),
         dispatch(&library)
               
         // 
-        // .withOutput("Out-5-6", juce::AudioChannelSet::stereo(), false)
-        // .withOutput("Out-7-8", juce::AudioChannelSet::stereo(), false)              
 #endif
 {
     addParameter(gain = new juce::AudioParameterFloat("gain", // parameterID
@@ -166,10 +165,6 @@ void DirtAudioProcessor::releaseResources() {
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool DirtAudioProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
-    if (layouts.getMainInputChannelSet()  == juce::AudioChannelSet::disabled()
-     || layouts.getMainOutputChannelSet() == juce::AudioChannelSet::disabled())
-        return false;
- 
     return true;
 
   // FIX THIS, (see how it works with auval)
@@ -203,16 +198,15 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     // get the event from the network thread
     for(Event *e = dispatch.consume(); e != nullptr; e = dispatch.consume()) {
-        if ( e->time + 500 < currentTm ) {
-            logger.printf("Flushing late event from dsp thread.");
+        if ( e->time != 0 && e->time + 500 < currentTm ) {
+            logger.printf("Flushing late event from dsp thread. %f %f", e->time, currentTm);
             free(e);
         } else {
             if ( debugEvent ) {
-                logger.printf("time:%f s:%s cps:%f cycle:%f note:%f n:%f delta:%f legato:%f midichan:%f",
-                    e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->legato, e->midichan);
+                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g legato:%g midichan:%d being:%g end:%g speed:%g unit:%c",
+                    e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->legato, e->midichan,
+                    e->begin, e->end, e->speed, e->unit);
             }
-
-
             pendingEv.addSorted(eventSorter, e);
         }
     }
@@ -319,6 +313,8 @@ juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter() {
   return new DirtAudioProcessor();
 }
 
+/*
+
 bool DirtAudioProcessor::canApplyBusCountChange (bool isInput, bool isAddingBuses, juce::AudioProcessor::BusProperties& outNewBusProperties) {
     //logger.printf("bus added %s", outNewBusProperties.busName.toRawUTF8());
     return true;
@@ -339,3 +335,5 @@ void DirtAudioProcessor::processorLayoutsChanged() {
 bool DirtAudioProcessor::canAddBus(bool isInput) const {
     return true;
 }
+
+*/

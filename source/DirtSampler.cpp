@@ -18,6 +18,7 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
     const float* const inR = voice.sample->getBuffer().getNumChannels() > 1 ? voice.sample->getBuffer().getReadPointer(1) : nullptr;
     float* outL = buffer.getWritePointer(voice.orbit, startOutput);
     float* outR = buffer.getWritePointer(voice.orbit+1, startOutput);
+    int interpolationPos = voice.pitchRatio < 0 ? -1 : +1;
 
     while (--numSamples >= 0) {
         auto pos = (int) voice.samplePos;
@@ -25,8 +26,8 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
         auto invAlpha = 1.0f - alpha;
 
         // just using a very simple linear interpolation here..
-        float l = (inL[pos] * invAlpha + inL[pos + 1] * alpha);
-        float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + 1] * alpha) : l;
+        float l = (inL[pos] * invAlpha + inL[pos + interpolationPos] * alpha);
+        float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + interpolationPos] * alpha) : l;
 
         float envValue = voice.getNextSample() * voice.gain;
 
@@ -42,15 +43,23 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
 
         voice.samplePos += voice.pitchRatio;
 
-        // TODO: do not base this as sampleEnd
-        if (voice.samplePos >= voice.sampleEnd )
-            break;
+        if ( voice.pitchRatio < 0 ) {
+            if (voice.samplePos < voice.sampleStart ) {
+                voice.active = false;
+                break;
+            }
+        } else {
+            if (voice.samplePos >= voice.sampleEnd ) {
+                voice.active = false;
+                break;
+            }
+        }
     }
 }
 
 void DirtSampler::processBlock(juce::AudioBuffer<float> &buffer, int numSamples) {
     for (auto &voice: voices) {
-        if ( voice.samplePos < voice.sampleEnd ) {
+        if ( voice.active ) {
             processVoice(voice, buffer, numSamples);
         }
     }
@@ -66,16 +75,30 @@ void DirtSampler::setSampleRate(float rate) {
 
 void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLength) {    
     for (auto &voice: voices) {
-        if ( voice.samplePos >= voice.sampleEnd ) {
+        if ( ! voice.active ) {
+            voice.active = true;
             voice.serialId = event->serialId;
             voice.startOffset = offsetStart;
             voice.sample = sample;
-            voice.samplePos = event->begin * sample->getLength();
-            voice.sampleEnd = event->end * sample->getLength();
-            voice.pitchRatio = std::pow(2.0, (event->note / 12.0)) * sample->getSampleRate() / sampleRate;
+
+
+            if (event->speed != 1)
+                voice.pitchRatio = event->speed;
+            else
+                voice.pitchRatio = std::pow(2.0, (event->note / 12.0));
+            voice.pitchRatio *= sample->getSampleRate() / sampleRate;
+
+            if ( voice.pitchRatio < 0 ) {
+                voice.samplePos = event->end * sample->getLength();
+                voice.sampleEnd = event->begin * sample->getLength();
+            } else {
+                voice.samplePos = event->begin * sample->getLength();
+                voice.sampleEnd = event->end * sample->getLength();
+            }
 
             if ( playLength == 0 )
-                playLength = sample->getLength() * voice.pitchRatio;
+                playLength = abs(sample->getLength() * voice.pitchRatio);
+            voice.eventEnd = playLength;
 
             voice.gain = event->gain;
             voice.panl = event->pan < 0.5 ? 1 : 2 - event->pan * 2;

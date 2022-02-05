@@ -80,11 +80,14 @@ public:
 
     const int DIRT_UDP_PORT = 57120;
 
+    /*
     bool canApplyBusCountChange (bool isInput, bool isAddingBuses, BusProperties& outNewBusProperties) override;
     void processorLayoutsChanged() override;
     void numBusesChanged() override;
     void numChannelsChanged() override;
     bool canAddBus(bool) const override;
+
+    */
 private:
     juce::AudioParameterFloat *gain;
     Library library;
@@ -106,6 +109,7 @@ private:
     DirtLogger logger;
 
     bool debugEvent = false;
+    bool forceObrit0 = true;
 
     void setSamplePath(juce::String paths, bool lazyLoading);
 
