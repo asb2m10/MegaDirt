@@ -110,8 +110,11 @@ private:
 
     bool debugEvent = false;
     bool forceObrit0 = true;
+    bool syncHost = false;
 
     void setSamplePath(juce::String paths, bool lazyLoading);
+
+    float lockInDawCycle = 0;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

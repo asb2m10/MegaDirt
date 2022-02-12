@@ -153,6 +153,8 @@ void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   dispatch.flushEvent();
 
   isActive = true;
+
+  logger.printf("tail length %lf", getTailLengthSeconds());
 }
 
 void DirtAudioProcessor::releaseResources() {
@@ -178,6 +180,8 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     int numSample = buffer.getNumSamples();
     double currentTm = juce::Time::currentTimeMillis();
+    float hostCps = 0;
+    float hostCycle = 0;
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -188,15 +192,24 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    auto *playhead = getPlayHead();
-    if (playhead != NULL) {
-        juce::AudioPlayHead::CurrentPositionInfo posInfo;
-        playhead->getCurrentPosition(posInfo);
-        //printf("%fn", posInfo.ppqPosition);
-        // posInfo.timeInSeconds;
+    // We try to sync host time
+    if ( syncHost ) {
+        auto *playhead = getPlayHead();
+        if (playhead != NULL) {
+            juce::AudioPlayHead::CurrentPositionInfo posInfo;
+            playhead->getCurrentPosition(posInfo);
+            if ( posInfo.isPlaying || posInfo.isRecording ) {
+                hostCycle = posInfo.ppqPosition/4;
+                hostCps = posInfo.bpm/60/4;
+            }
+        } else {
+            lockInDawCycle = 0;
+        }
+    } else {
+        lockInDawCycle = 0;
     }
 
-    // get the event from the network thread
+    // get the events from the network thread
     for(Event *e = dispatch.consume(); e != nullptr; e = dispatch.consume()) {
         if ( e->time != 0 && e->time + 500 < currentTm ) {
             logger.printf("Flushing late event from dsp thread. %f %f", e->time, currentTm);
@@ -206,6 +219,30 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
                 logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g legato:%g midichan:%d being:%g end:%g speed:%g unit:%c",
                     e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->legato, e->midichan,
                     e->begin, e->end, e->speed, e->unit);
+            } 
+
+            if ( hostCycle != 0 && e->cps != 0 ) {
+                if ( e->cps != hostCps ) {
+                    logger.printf("Warning: Host cps mismatch %f <-> %f, cannot sync", e->cps, hostCps);
+                    lockInDawCycle = 0;
+                } else {
+                    if ( lockInDawCycle == 0 ) {
+                        lockInDawCycle = hostCycle - e->cycle - (((float)abs(e->cycle+1)) - e->cycle) + 1;
+                        logger.printf("Locking host cycles with Tidal %f", lockInDawCycle);
+                    }
+
+                    double delta = e->cycle + lockInDawCycle - hostCycle;
+                    double targetTime = currentTm + e->cps * 1000 * delta;
+
+                    logger.printf("cycle %lf lockIn %lf hostCyle %lf delta %lf", e->cycle, lockInDawCycle, hostCycle, delta);
+
+                    if (targetTime <= currentTm || targetTime > currentTm+5000 ) {
+                        logger.printf("Sync event too wide, unlocking cycle");
+                        lockInDawCycle = 0;
+                    } else {
+                        e->time = targetTime;
+                    }
+                }
             }
             pendingEv.addSorted(eventSorter, e);
         }
@@ -213,7 +250,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     juce::Array<Event *> noteOff;
 
-    // identify event to be played
     int executeEvent = 0;
     double tmEnd = currentTm + (numSample * 1000 / sampler.sampleRate);
     for(auto event: pendingEv) {
@@ -252,8 +288,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             if ( sample != nullptr ) {
                 if ( forceObrit0 ) 
                     event->orbit = 0;
-
-                if ( event->orbit * 2 >= totalNumOutputChannels ) {
+                else if ( event->orbit * 2 >= totalNumOutputChannels ) {
                     logger.printf("Orbit %d not set in DAW. See plugin output bus.", event->orbit);
                     event->orbit = 0;
                 }
@@ -268,6 +303,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         free(event);
     }
 
+    // remove played event
     pendingEv.removeRange(0, executeEvent);
 
     // reinsert note off
