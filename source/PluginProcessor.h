@@ -115,6 +115,7 @@ private:
     void setSamplePath(juce::String paths, bool lazyLoading);
 
     float lockInDawCycle = 0;
+    double lastEvent;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

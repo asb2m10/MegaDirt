@@ -153,8 +153,6 @@ void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   dispatch.flushEvent();
 
   isActive = true;
-
-  logger.printf("tail length %lf", getTailLengthSeconds());
 }
 
 void DirtAudioProcessor::releaseResources() {
@@ -182,6 +180,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     double currentTm = juce::Time::currentTimeMillis();
     float hostCps = 0;
     float hostCycle = 0;
+    double tmPos = 0;
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -201,11 +200,13 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             if ( posInfo.isPlaying || posInfo.isRecording ) {
                 hostCycle = posInfo.ppqPosition/4;
                 hostCps = posInfo.bpm/60/4;
+                tmPos = ((double)posInfo.timeInSeconds) * 1000;
             }
-        } else {
-            lockInDawCycle = 0;
         }
-    } else {
+    }
+
+    // playhead not playing, reset lock
+    if ( hostCps == 0 ) {
         lockInDawCycle = 0;
     }
 
@@ -227,20 +228,23 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
                     lockInDawCycle = 0;
                 } else {
                     if ( lockInDawCycle == 0 ) {
-                        lockInDawCycle = hostCycle - e->cycle - (((float)abs(e->cycle+1)) - e->cycle) + 1;
-                        logger.printf("Locking host cycles with Tidal %f", lockInDawCycle);
+                        lockInDawCycle = round(hostCycle)+1 - e->cycle;
+                        logger.printf("Locking host cycles with Tidal host %f tidal %f lock %f", hostCycle, e->cycle, lockInDawCycle);
                     }
 
                     double delta = e->cycle + lockInDawCycle - hostCycle;
-                    double targetTime = currentTm + e->cps * 1000 * delta;
+                    double targetTime = currentTm + delta * (1/hostCps*250);
+                    double target2 = currentTm + (delta * tmPos / hostCycle);
 
-                    logger.printf("cycle %lf lockIn %lf hostCyle %lf delta %lf", e->cycle, lockInDawCycle, hostCycle, delta);
+                    //logger.printf("cycle %lf lockIn %lf hostCyle %lf target %f delta %lf", e->cycle, lockInDawCycle, hostCycle, e->cycle + lockInDawCycle, delta);
+                    logger.printf("hostCyle %lf target %f delta %lf targetTm %lf", hostCycle, e->cycle + lockInDawCycle, delta, target2-currentTm);
 
                     if (targetTime <= currentTm || targetTime > currentTm+5000 ) {
                         logger.printf("Sync event too wide, unlocking cycle");
                         lockInDawCycle = 0;
                     } else {
-                        e->time = targetTime;
+                        e->cycle = e->cycle + lockInDawCycle;
+                        e->time = target2;
                     }
                 }
             }
@@ -250,12 +254,22 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
     juce::Array<Event *> noteOff;
 
+    /*if ( lastCycle != 0 && round(lastCycle) != round(hostCycle) )
+        logger.printf("cycle %f tm %lf", hostCycle, currentTm);*/
+
     int executeEvent = 0;
     double tmEnd = currentTm + (numSample * 1000 / sampler.sampleRate);
     for(auto event: pendingEv) {
+
         if ( event->time >= tmEnd )
             break;
 
+        if ( hostCycle != 0 ) {
+            float reste = event->cycle - hostCycle;
+            float delta = reste * (1/hostCps*250);
+
+            logger.printf("-- accuracy %f playing %f hostCycle: %f -- resteTm %f", reste, event->cycle, hostCycle, delta);
+        }
         executeEvent++;
 
         // start of event in sample
