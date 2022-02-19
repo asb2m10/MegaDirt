@@ -17,6 +17,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 * Orbits are output buses of the plugin. We are limited to 4 bus (orbits). Those might have to be enable the extra ones from the DAW.
 * Audio FX (#room) are not yet supported
 * Renoise doesn't seems to render plugin if the editor window is closed
+* Tidal cyles can be sync with DAW playhead, in order to work, you have to set the same tempo on both side
 
 ### What is implemented from SuperDirt
 
@@ -34,7 +35,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 - [x] Character (a5, c, a#, gb) note names
 - [x] Multichannel orbit support (based on plugin bus)
 - [x] Support loop units ('r' and 'c')
-- [ ] Sync DAW playhead with tidal cycles
+- [x] Sync DAW playhead with tidal cycles
 - [ ] Windows Dirt sample directory
 
 ### Bulding
