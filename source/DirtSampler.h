@@ -73,7 +73,6 @@ class DirtSampler {
     std::array<DirtVoice, 30> voices;
     float sampleRate = 44100;
 
-    double syncSamplePos = 0;
     float sampleLatency;
     const float EVENT_LATENCY = 0.3;
     void advance(int samples);

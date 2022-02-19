@@ -41,6 +41,7 @@ private:
 
     juce::ToggleButton debugEvent;
     juce::ToggleButton forceObrit0;
+    juce::ToggleButton syncHost;
 
     void setLibraryPath();
 
