@@ -232,7 +232,7 @@ void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
 
     if ( timeTag < juce::Time::getCurrentTime().toMilliseconds() ) {
         juce::Logger::writeToLog("Warning: ignoring event in the past");
-        //return;
+        return;
     }
 
     for (auto& element : bundle) {
