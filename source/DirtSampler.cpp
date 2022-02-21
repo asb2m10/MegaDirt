@@ -63,13 +63,65 @@ void DirtSampler::processBlock(juce::AudioBuffer<float> &buffer, int numSamples)
             processVoice(voice, buffer, numSamples);
         }
     }
+
+    for(int i=0; i<fx.size();i++) {
+        if ( buffer.getNumChannels() <= i*2 )
+            break;
+        auto inoutBlock = juce::dsp::AudioBlock<float> (buffer).getSubsetChannelBlock(i*2, 2);
+        fx[i].process(juce::dsp::ProcessContextReplacing<float>(inoutBlock));
+    }
 }
 
-void DirtSampler::setSampleRate(float rate) {
-    sampleRate = rate;
-    sampleLatency = sampleRate * EVENT_LATENCY;
+void DirtSampler::prepareToPlay(double rate, int samplesPerBlock) {
+    sampleRate = sampleRate;
     for (auto &voice: voices) {
         voice.adsr.setSampleRate(rate);
+    }
+
+    for(auto &i : fx) {
+        i.prepareToPlay(rate, samplesPerBlock);
+    }
+}
+
+void DirtFX::apply(Event *event) {
+    if ( reverb.isEnabled() || event->hasKey("room") ) {
+        reverb.setEnabled(true);
+        juce::Reverb::Parameters parms;
+        parms.roomSize = event->get("size", 0.5);
+        parms.wetLevel = event->get("room", 0);
+        // TODO: support msg #dry
+        reverb.setParameters(parms);
+    }
+
+    if ( event->hasKey("cutoff") ) {
+        filter.setMode(juce::dsp::LadderFilterMode::LPF24);
+        filter.setCutoffFrequencyHz(event->keys["cutoff"]);
+        filter.setResonance(event->get("resonance", 0));
+        filter.setEnabled(true);
+    } else if ( event->hasKey("hcutoff") ) {
+        filter.setMode(juce::dsp::LadderFilterMode::HPF24);
+        filter.setCutoffFrequencyHz(event->keys["hcutoff"]);
+        filter.setResonance(event->get("hresonance", 0));
+        filter.setEnabled(true);
+    } else if ( event->hasKey("bandf") ) {
+        filter.setMode(juce::dsp::LadderFilterMode::BPF24);
+        filter.setCutoffFrequencyHz(event->keys["bandf"]);
+        filter.setResonance(event->get("bandq", 0));
+        filter.setEnabled(true);
+    } else if ( event->hasKey("djf") ) {
+        float v = event->get("djf");
+        // TODO: theses values must be scaled.
+        if ( v < 0.5 ) {
+            filter.setMode(juce::dsp::LadderFilterMode::LPF24);
+            filter.setCutoffFrequencyHz(v * sampleRate);
+        } else {
+            filter.setMode(juce::dsp::LadderFilterMode::HPF24);
+            filter.setCutoffFrequencyHz((1-v) * sampleRate);
+        }
+        filter.setResonance(0);
+        filter.setEnabled(true);
+    } else {
+        filter.setEnabled(false);
     }
 }
 
@@ -81,24 +133,25 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
             voice.startOffset = offsetStart;
             voice.sample = sample;
 
-            voice.samplePos = event->begin * sample->getLength();
-            voice.sampleEnd = event->end * sample->getLength();
+            voice.samplePos = event->get("begin", 0) * sample->getLength();
+            voice.sampleEnd = event->get("end", 1) * sample->getLength();
 
+            float speed = event->get("speed", 1);
             switch ( event->unit ) {
                 case 'c' :
                     voice.pitchRatio = (voice.sampleEnd - voice.samplePos) / playLength;
-                    voice.pitchRatio *= event->speed;
+                    voice.pitchRatio *= speed;
                 break; 
 
                 case 's':
-                    if ( event->speed != 1 )
-                        voice.pitchRatio = (voice.sampleEnd - voice.samplePos) / event->speed * sampleRate;
+                    if ( speed != 1 )
+                        voice.pitchRatio = (voice.sampleEnd - voice.samplePos) / speed * sampleRate;
                     else
                         voice.pitchRatio = 1;
                 break;
 
                 default:
-                    voice.pitchRatio = std::pow(2.0, (event->note / 12.0)) * event->speed;
+                    voice.pitchRatio = std::pow(2.0, (event->note / 12.0)) * speed;
                     voice.pitchRatio *= sample->getSampleRate() / sampleRate;
             }
 
@@ -110,12 +163,17 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
                 playLength = abs(sample->getLength() * voice.pitchRatio);
             voice.eventEnd = playLength;
 
-            voice.gain = event->gain;
-            voice.panl = event->pan < 0.5 ? 1 : 2 - event->pan * 2;
-            voice.panr = event->pan > 0.5 ? 1 : event->pan * 2;
+            voice.gain = event->get("gain", 1);
+            float pan = event->get("pan", 0.5);
+            voice.panl = pan < 0.5 ? 1 : 2 - pan * 2;
+            voice.panr = pan > 0.5 ? 1 : pan * 2;
             voice.envPos = 0;
             voice.releasePos = playLength - 100;
             voice.orbit = event->orbit * 2;
+
+            if ( fx.size() > event->orbit )
+                fx[event->orbit].apply(event);
+
             voice.adsr.reset();
             voice.adsr.noteOn();
             return;

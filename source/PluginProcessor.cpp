@@ -149,7 +149,7 @@ void DirtAudioProcessor::changeProgramName(int index, const juce::String &newNam
 void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
-  sampler.setSampleRate(sampleRate);
+  sampler.prepareToPlay(sampleRate, samplesPerBlock);
   dispatch.flushEvent();
 
   isActive = true;
@@ -217,9 +217,14 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             free(e);
         } else {
             if ( debugEvent ) {
-                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g legato:%g midichan:%d being:%g end:%g speed:%g unit:%c",
-                    e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->legato, e->midichan,
-                    e->begin, e->end, e->speed, e->unit);
+                juce::StringArray content;
+
+                for(juce::HashMap<juce::String, float>::Iterator i (e->keys); i.next();) {
+                    content.add(i.getKey() + ":" + juce::String(i.getValue()));
+                }
+
+                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g unit:%c %s",
+                    e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->unit, content.joinIntoString(" ").toRawUTF8());
             } 
 
             if ( hostCycle != 0 && e->cps != 0 ) {
@@ -270,22 +275,29 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         int offsetStart = juce::jmax((double) 0, event->time - currentTm) * (sampler.sampleRate * 0.001);
 
         // event duration in seconds
-        double playLength = (event->sustain != 0 ? event->sustain : event->delta * event->legato);
+        double playLength;
+        if ( event->hasKey("sustain") ) {
+            playLength = event->get("sustain", 1);
+        } else {
+            playLength = event->delta * event->get("legato", 1);
+        }
 
-        if ( event->ccv != -1 && event->ccn != -1 ) {
-            midiMessages.addEvent(juce::MidiMessage(0xb0+event->midichan, event->ccn, event->ccv), offsetStart);
-            midiActivity.set(event->midichan, true);              
+        int midichan = event->get("midichan", 0);
+
+        if ( event->hasKey("ccv") && event->hasKey("ccn") ) {
+            midiMessages.addEvent(juce::MidiMessage(0xb0+midichan, event->get("ccn"), event->get("ccv")), offsetStart);
+            midiActivity.set(midichan, true);
         }
 
         if ( event->sound == SOUND_MIDI ) {
             int targetNote = (event->note != 0 ? event->note : event->n) + 48;
-            midiMessages.addEvent(juce::MidiMessage(0x90+event->midichan, targetNote, event->velocity), offsetStart);              
+            midiMessages.addEvent(juce::MidiMessage(0x90+midichan, targetNote, event->velocity), offsetStart);
 
             if ( event->velocity != 0 ) {
                 //logger.printf("%f on  %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
                 event->time += (playLength * 1000) - 1;
                 event->velocity = 0;
-                midiActivity.set(event->midichan, true);              
+                midiActivity.set(midichan, true);
                 noteOff.add(event);
                 continue;
             } else {
@@ -307,8 +319,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             }
             patternActivity.set(event->id, true);
         }
-
-        free(event);
+        delete event;
     }
 
     // remove played event

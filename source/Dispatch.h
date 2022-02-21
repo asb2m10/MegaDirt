@@ -22,32 +22,50 @@ struct Event {
     float note = 0;             // item note, if sample will be pitched
     float n = 0;                // item sample index in sound
     char unit = 'r';            // unit for the pitch
-    float speed = 1;
+    //float speed = 1;
 
     // sample playback
-    float begin = 0;            // begin to play on sample (in %)
-    float end = 1;              // end to play on sample (in %)
-    float gain = 1;
-    float pan = 0.5;
+    //float begin = 0;            // begin to play on sample (in %)
+    //float end = 1;              // end to play on sample (in %)
+    //float gain = 1;
+    //float pan = 0.5;
 
     // event timing
     float delta = 0;            // item duration in seconds (based on cycle)
-    float legato = 1;           // event duration based on delta
-    float sustain = 0;          // absolute event time (superseed delta) in seconds
+    //float legato = 1;           // event duration based on delta
+    //float sustain = 0;          // absolute event time (superseed delta) in seconds
 
     // midi
-    int midichan = 0;           // midi channel for event
+    //int midichan = 0;           // midi channel for event
     int velocity = 100;
-    float ccn = -1;             // midi controller value
-    float ccv = -1;             // midi controller value
+    //float ccn = -1;             // midi controller value
+    //float ccv = -1;             // midi controller value
+
+    juce::HashMap<juce::String, float> keys;
+
+    float get(juce::String key, float defaultValue) {
+        return keys.contains(key) ? keys[key] : defaultValue;
+    }
+
+    float get(juce::String key) {
+        return keys[key];
+    }
+
+    bool hasKey(juce::String key) {
+        return keys.contains(key);
+    }
+
+    bool hasKeys(juce::StringArray array) {
+        for(auto &i: array) {
+            if ( keys.contains(i) )
+                return true;
+        }
+        return false;
+    }
 
     double debug;
 };
 
-enum PlayType {
-    P_S, P_ID, P_CPS, P_CYCLE, P_DELTA, P_NOTE, P_N, P_BEGIN, P_END, P_MIDICHAN,
-    P_ORBIT, P_CCN, P_CCV, P_LEGATO, P_UNIT, P_OCTAVE, P_SUSTAIN, P_GAIN, P_PAN, P_SPEED
-};
 
 class Dispatch : private juce::OSCReceiver::Listener<juce::OSCReceiver::MessageLoopCallback> {
 public:
@@ -95,7 +113,6 @@ private:
     juce::LockFreeQueue<Event *> queue;
     juce::OSCReceiver oscReceiver;
 
-    juce::HashMap<juce::String, int> oscMapper;
     Library *library;
 
     int serialId = 0;

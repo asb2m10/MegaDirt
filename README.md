@@ -7,7 +7,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 * MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory.
 
 ### MegaDirt might have those advantage over SuperDirt on Supercolider
-* Easier installation. MegaDirt can also be run as a standalone application
+* Easier installation. MegaDirt can also be run as a standalone application (great for development)
 * Easier audio routing from DAW (orbits are plugin buses) and use DAW audio plugins
 * Easier midi routing from DAW and use DAW midi plugins
 * TidalCycle events can be in sync with the DAW timeline (in progress)
@@ -15,9 +15,8 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 ## Things to know
 
 * Orbits are output buses of the plugin. We are limited to 4 bus (orbits). Those might have to be enable the extra ones from the DAW.
-* Audio FX (#room) are not yet supported
 * Renoise doesn't seems to render plugin if the editor window is closed
-* Tidal cyles can be sync with DAW playhead, in order to work, you have to set the same tempo on both side
+* Tidal cyles can be sync with DAW playhead, in order to work, you have to set the same tempo/cps on both side
 
 ### What is implemented from SuperDirt
 
@@ -30,6 +29,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 - [x] osc msg ccn / ccv - midi controller change
 - [x] osc msg orbit - sample output bus
 - [x] osc msg speed - sample speed
+- [ ] osc msg loop - loop the sample within window playback
 - [x] Lazy loading of sampling files based on dirt folder
 - [x] Configurable sample path
 - [x] Character (a5, c, a#, gb) note names
@@ -37,6 +37,16 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 - [x] Support loop units ('r' and 'c')
 - [x] Sync DAW playhead with tidal cycles
 - [ ] Windows Dirt sample directory
+
+### SuperDirt effects
+
+Basic SuperDirt effects are now supported. 
+
+- [x] Reverb - # room # size
+- [x] Filters - # cutoff # hcutoff # bandf (and the resonance counterpart) #djf 
+- [ ] Delay - #delay #delayt #delayfb
+- [ ] Crush - #crush
+- [ ] Phaser - #phasr #phasdp
 
 ### Bulding
 

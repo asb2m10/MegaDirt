@@ -1,5 +1,6 @@
 #pragma once
 
+#include <juce_dsp/juce_dsp.h>
 #include "Library.h"
 #include "Dispatch.h"
 #include <climits>
@@ -69,18 +70,52 @@ struct DirtVoice {
     bool active = false;
 };
 
+class DirtFX {
+    float sampleRate;
+public:
+    juce::dsp::LadderFilter<float> filter;
+    juce::dsp::DelayLine<float> delay;
+    juce::dsp::Reverb reverb;
+
+    void reset() {
+        filter.reset();
+        filter.setEnabled(false);
+        delay.reset();
+        reverb.reset();
+        reverb.setEnabled(false);
+    }
+
+    void prepareToPlay(double rate, int samplesPerBlock) {
+        juce::dsp::ProcessSpec spec;
+
+        spec.numChannels = 2;
+        spec.sampleRate = rate;
+        spec.maximumBlockSize = samplesPerBlock;
+
+        filter.prepare(spec);
+        delay.prepare(spec);
+        reverb.prepare(spec);
+        reset();
+
+        sampleRate = rate;
+    }
+
+    void apply(Event *e);
+
+    template <typename ProcessContext>
+    void process(const ProcessContext& context) {
+        filter.process(context);
+        //delay.process(context);
+        if ( reverb.isEnabled() )
+            reverb.process(context);
+    }
+};
+
 class DirtSampler {
     std::array<DirtVoice, 30> voices;
     float sampleRate = 44100;
-
-    float sampleLatency;
-    const float EVENT_LATENCY = 0.3;
-    void advance(int samples);
-
     void processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffer, int numSamples);
-
-    double lastEvent;
-    double lastSyncEvent;
+    std::array<DirtFX, 4> fx;
 public:
     DirtSampler() {
         juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
@@ -94,14 +129,16 @@ public:
         for (auto &voice: voices) {
             voice.samplePos = voice.sampleEnd;
         }
+        for (auto &i : fx) {
+            i.reset();
+        }
     }
 
     friend DirtAudioProcessor;
 
     int offset(int &sampleStart, Event *event);
     int offset(float cps, float cycle);
-    
-    void setSampleRate(float rate);
+    void prepareToPlay(double sampleRate, int samplesPerBlock);
     void processBlock(juce::AudioBuffer<float> &buffer, int numSamples);
     void play(Event *event, Sample *sample, int offsetStart, int playLength);
 };

@@ -73,27 +73,6 @@ Dispatch::Dispatch(Library *lib) : library(lib)  {
                                 
                                 });
     oscReceiver.addListener(this);
-
-    oscMapper.set("s", P_S);
-    oscMapper.set("note", P_NOTE);
-    oscMapper.set("n", P_N);
-    oscMapper.set("_id_", P_ID);
-    oscMapper.set("cps", P_CPS);
-    oscMapper.set("cycle", P_CYCLE);
-    oscMapper.set("delta", P_DELTA);
-    oscMapper.set("midichan", P_MIDICHAN);
-    oscMapper.set("ccn", P_CCN);
-    oscMapper.set("ccv", P_CCV);
-    oscMapper.set("legato", P_LEGATO);
-    oscMapper.set("unit", P_UNIT);
-    oscMapper.set("octave", P_OCTAVE);
-    oscMapper.set("sustain", P_SUSTAIN);
-    oscMapper.set("orbit", P_ORBIT);
-    oscMapper.set("gain", P_GAIN);
-    oscMapper.set("pan", P_PAN);
-    oscMapper.set("begin", P_BEGIN);
-    oscMapper.set("end", P_END);
-    oscMapper.set("speed", P_SPEED);
 }
 
 Dispatch::~Dispatch() {
@@ -132,85 +111,35 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
         juce::String key = message[i].getString();
         juce::OSCArgument value = message[i+1];
 
-        if ( !oscMapper.contains(key) ) {
-            juce::Logger::writeToLog(juce::String("Key not mapped: ") + key);
-            continue;
-        }
-
-        switch(oscMapper[key]) {
-            case P_ID:
-                event->id = value.getString().getIntValue() - 1;
-            break;
-
-            case P_CPS:
-                event->cps = value.getFloat32();
-            break;
-
-            case P_CYCLE:
-                event->cycle = value.getFloat32();
-            break;
-
-            case P_DELTA:
-                event->delta = value.getFloat32();
-            break;
-
-            case P_S:
-                event->sound = value.getString();
-            break;
-
-            case P_N:
-                event->n = value.isFloat32() ? value.getFloat32() : value.getInt32();
-            break;
-
-            case P_NOTE:
-                if ( value.isString() ) 
-                    event->note = note2int(value.getString());
-                else
-                    event->note = value.isFloat32() ? value.getFloat32() : value.getInt32();
-            break;
-
-            case P_BEGIN:
-                event->begin = value.getFloat32();
-            break;
-
-            case P_END :
-                event->end = value.getFloat32();
-            break;
-
-            case P_ORBIT:
-                event->orbit = value.getInt32();
-            break;
-
-            case P_SPEED: 
-                event->speed = value.getFloat32();
-            break;
-
-            case P_UNIT:
-                event->unit = value.getString()[0];
-            break;
-
-            case P_GAIN:
-                event->gain = value.getFloat32();
-            break;
-
-            case P_PAN:
-                event->pan = value.getFloat32();
-            break;
-
-            case P_CCN:
-                event->ccn = value.getFloat32();
-            break;
-
-            case P_CCV:
-                event->ccv = value.getFloat32();
-            break;
-
-            case P_LEGATO:
-                event->legato = value.getFloat32();
-            break;
-
-            default:
-                juce::Logger::writeToLog(juce::String("Key not configured: " + key));
+        if ( key == juce::StringRef("_id_") ) {
+            event->id = value.getString().getIntValue() - 1;
+        } else if ( key == juce::String("cps") ) {
+            event->cps = value.getFloat32();
+        } else if ( key == juce::String("cycle") ) {
+            event->cycle = value.getFloat32();
+        } else if ( key == juce::String("delta") ) {
+            event->delta = value.getFloat32();
+        } else if ( key == juce::String("s") ) {
+            event->sound = value.getString();
+        } else if ( key == juce::String("n") ) {
+            event->n = value.isFloat32() ? value.getFloat32() : value.getInt32();
+        } else if ( key == juce::String("note") ) {
+            if ( value.isString() )
+                event->note = note2int(value.getString());
+            else
+                event->note = value.isFloat32() ? value.getFloat32() : value.getInt32();
+        } else if ( key == juce::String("orbit") ) {
+            event->orbit = value.getInt32();
+        } else if ( key == juce::String("unit") ) {
+            event->unit = value.getString()[0];
+        } else if ( key == juce::String("velocity") ) {
+            event->velocity = value.getFloat32();
+        } else {
+            if ( ! value.isFloat32() ) {
+                juce::Logger::writeToLog(juce::String("Key not mapped: ") + key);
+            } else {
+                event->keys.set(key, value.getFloat32());
+            }
         }
     }
     
