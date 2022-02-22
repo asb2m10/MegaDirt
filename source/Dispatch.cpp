@@ -143,10 +143,10 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
         }
     }
     
-    if ( event->sound != juce::StringRef("midi") ) {
+    if ( event->sound != juce::StringRef("midi") && event->sound != juce::StringRef("superpanic") ) {
         if ( ! library->lookup(event->sound, event->n) ) {
             juce::Logger::writeToLog(juce::String("Sound not found: ") + event->sound);
-            free(event);
+            delete event;
             return;
         }
     } 

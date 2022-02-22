@@ -11,6 +11,7 @@
 #include <stdarg.h>
 
 const juce::StringRef SOUND_MIDI("midi");
+const juce::StringRef SOUND_SUPERPANIC("superpanic");
 
 class EventSorter {
 public:
@@ -303,6 +304,8 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             } else {
                 //logger.printf("%f off %i %x %f %i\n", currentTm, targetNote, event, event->time, offsetStart);
             }
+        } else if ( event->sound == SOUND_SUPERPANIC ) {
+            panicMode = true;
         } else {
             Sample *sample = library.get(event->sound, event->n);
             if ( sample != nullptr ) {
@@ -322,16 +325,23 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         delete event;
     }
 
-    // remove played event
-    pendingEv.removeRange(0, executeEvent);
+    if ( panicMode == true ) {
+        // TODO: flush MIDI noteoff events
+        pendingEv.clearQuick();
+        sampler.panic();
+        panicMode = false;
+    } else {
+        // remove played event
+        pendingEv.removeRange(0, executeEvent);
 
-    // reinsert note off
-    for(auto e: noteOff) {
-        pendingEv.addSorted(eventSorter, e);
+        // reinsert note off
+        for(auto e: noteOff) {
+            pendingEv.addSorted(eventSorter, e);
+        }
+
+        sampler.processBlock(buffer, numSample);
+        buffer.applyGain(*gain);
     }
-
-    sampler.processBlock(buffer, numSample);
-    buffer.applyGain(*gain);
 }
 
 //==============================================================================

@@ -60,7 +60,7 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
 
     addAndMakeVisible(showLog);
     addAndMakeVisible(panicButton);
-    panicButton.onClick = [this] { this->audioProcessor.sampler.panic(); };
+    panicButton.onClick = [this] { this->audioProcessor.panic(); };
 
     addAndMakeVisible(libraryContent);
     addAndMakeVisible(libraryPath);

@@ -71,11 +71,6 @@ public:
     void getStateInformation(juce::MemoryBlock &destData) override;
     void setStateInformation(const void *data, int sizeInBytes) override;
 
-    struct Orbit {
-        bool activity;
-        int targetBus = 0;
-    };
-
     friend DirtAudioProcessorEditor;
 
     const int DIRT_UDP_PORT = 57120;
@@ -89,6 +84,7 @@ public:
 
     */
 private:
+    bool panicMode = false;
     juce::AudioParameterFloat *gain;
     Library library;
     Dispatch dispatch;
@@ -101,7 +97,9 @@ private:
     std::bitset<16> patternActivity;
     std::bitset<16> midiActivity;
 
-    void panic();
+    void panic() {
+        panicMode = true;
+    }
 
     bool isActive;
 
