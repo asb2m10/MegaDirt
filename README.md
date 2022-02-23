@@ -29,7 +29,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 - [x] osc msg ccn / ccv - midi controller change
 - [x] osc msg orbit - sample output bus
 - [x] osc msg speed - sample speed
-- [ ] osc msg loop - loop the sample within window playback
+- [x] osc msg loop - loop the sample within window playback
 - [x] Lazy loading of sampling files based on dirt folder
 - [x] Configurable sample path
 - [x] Character (a5, c, a#, gb) note names

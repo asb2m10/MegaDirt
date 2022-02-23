@@ -52,6 +52,8 @@ struct DirtVoice {
     float panr = 1;
     float gain = 1;
 
+    int loop;
+
     juce::ADSR adsr;
 
     inline float getNextSample() {

@@ -55,7 +55,7 @@ DirtAudioProcessor::DirtAudioProcessor()
     dispatch.connect(DIRT_UDP_PORT);
 
     if ( dispatch.isConnected() ) {
-        logger.printf("*** MegaDirt listening to Tidal messages on port: %i", DIRT_UDP_PORT);
+        logger.printf("*** MegaDirt listening for Tidal messages on port: %i", DIRT_UDP_PORT);
     } else {
         logger.printf("ERROR: unable to listen to UDP port: %i", DIRT_UDP_PORT);
     }

@@ -45,13 +45,19 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
 
         if ( voice.pitchRatio < 0 ) {
             if (voice.samplePos < voice.sampleStart ) {
-                voice.active = false;
-                break;
+                if ( voice.loop-- < 1 ) {
+                    voice.active = false;
+                    break;
+                } 
+                voice.samplePos = voice.sampleEnd;
             }
         } else {
             if (voice.samplePos >= voice.sampleEnd ) {
-                voice.active = false;
-                break;
+                if ( voice.loop-- < 1 ) {
+                    voice.active = false;
+                    break;
+                }
+                voice.samplePos = voice.sampleStart;
             }
         }
     }
@@ -156,9 +162,12 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
             }
 
             if ( voice.pitchRatio < 0 ) {
-                std::swap(voice.samplePos, voice.sampleEnd);
+                voice.samplePos = voice.sampleEnd;
             }
-            
+
+            voice.loop = event->get("loop", 1);
+            voice.loop = voice.loop < 1 ? 0 : voice.loop - 1;
+
             if ( playLength == 0 )
                 playLength = abs(sample->getLength() * voice.pitchRatio);
             voice.eventEnd = playLength;
