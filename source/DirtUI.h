@@ -72,7 +72,6 @@ class RootTreeViewItem : public juce::TreeViewItem {
     Library *library;
 public: 
     juce::HashMap<juce::String, int> refContent;
-
     RootTreeViewItem(Library *lib) : library(lib) {}
 
     bool mightContainSubItems() {
@@ -82,15 +81,11 @@ public:
     void refresh();
 };
 
-class OrbitViewer : public juce::Component {
-
-
-};
-
 class StatusBar : public juce::Component {
 public:
     std::bitset<16> *patternActivity;
     std::bitset<16> *midiActivity;
+    juce::String msg;
 
     void paint (juce::Graphics& g) override {
         g.fillAll(findColour(juce::TextEditor::backgroundColourId));
@@ -117,6 +112,32 @@ public:
             return;
 
         g.setColour(findColour(juce::Label::textColourId));
-        g.drawText (display, 0, 0, getWidth() - 4, getHeight() - 3, juce::Justification::centredRight, true);
+        g.drawText(display, 0, 0, getWidth() - 4, getHeight() - 3, juce::Justification::centredRight, true);
+        g.drawText(msg, 0, 0, getWidth() - 4, getHeight() - 3, juce::Justification::centredLeft, true);
+    }
+};
+
+class LogViewer : public juce::TextEditor {
+  juce::StringArray *log;
+public:
+    LogViewer(juce::StringArray *content) {
+        log = content;
+        setMultiLine(true);
+        setReadOnly(true);
+        setScrollbarsShown(true);        
+    }
+
+    void addPopupMenuItems(juce::PopupMenu &menuToAddTo, const juce::MouseEvent *mouseClickEvent) {
+        menuToAddTo.addItem(juce::StandardApplicationCommandIDs::copy, "Copy");
+        menuToAddTo.addItem(juce::StandardApplicationCommandIDs::selectAll, "Select All");
+        menuToAddTo.addSeparator();
+        menuToAddTo.addItem(juce::StandardApplicationCommandIDs::del, "Clear logs");
+    }
+
+    void performPopupMenuAction(int menuItemID) {
+        if (menuItemID == juce::StandardApplicationCommandIDs::del)
+            log->clearQuick();
+        else
+            juce::TextEditor::performPopupMenuAction(menuItemID);
     }
 };

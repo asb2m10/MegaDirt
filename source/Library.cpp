@@ -38,25 +38,24 @@ void Library::run() {
             for(int i=0; i<soundList.size();i++) {
                 SampleHolder holder;
                 holder.filename = soundList[i];
+                foundSamples++;
                 if ( !lazyLoading ) {
                     juce::AudioFormatReader *reader = manager.createReaderFor(soundList[i]);
                     if ( reader != nullptr ) {
-                        numSamples++;
                         holder.sample.reset(new Sample(*reader, 120));
                         delete reader;
                     }
                 }
                 holders.add(holder);
             }
-            numSounds++;
             content.set(soundFile.getFileName(), holders);
             if ( threadShouldExit() ) {
                 printf("Exiting thread reading...\n");
                 return;
             }
         }
+        juce::Logger::writeToLog("> Found " + juce::String(foundSamples) + " samples.");
     }
-    printf("Finished reading %d samples\n", numSamples);
 }
 
 bool Library::lookup(juce::String name, int note) {
@@ -71,7 +70,6 @@ bool Library::lookup(juce::String name, int note) {
     if ( holder.sample.get() == nullptr ) {
         juce::AudioFormatReader *reader = manager.createReaderFor(holder.filename);
         if ( reader != nullptr ) {
-            numSamples++;
             holder.sample.reset(new Sample(*reader, 120));
             delete reader;
         }

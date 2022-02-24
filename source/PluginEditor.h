@@ -15,7 +15,7 @@
 //==============================================================================
 /**
  */
-class DirtAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer {
+class DirtAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer, public juce::MenuBarModel {
 public:
     DirtAudioProcessorEditor(DirtAudioProcessor &);
     ~DirtAudioProcessorEditor() override;
@@ -25,23 +25,37 @@ public:
     void playSound(juce::String soundName, int n);
     virtual void timerCallback() override;
 
+    juce::StringArray getMenuBarNames() {
+        return juce::StringArray({"File", "Settings"});
+    }
+
+    juce::PopupMenu getMenuForIndex(int topLevelMenuIndex, const juce::String& str);
+    void menuItemSelected(int x, int y);
+
 private:
+
+    enum MenuResults {
+        configPath = 1000,
+        forceOrbit0,
+        enableDebug
+    };
+
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     DirtAudioProcessor &audioProcessor;
     juce::TreeView soundBrowser;
     juce::TextButton panicButton;
-    juce::TextEditor showLog;
+    LogViewer logViewer;
+
     int logLines = 0;
     RootTreeViewItem *rootItem;
 
     juce::Label libraryContent;
-    juce::TextButton libraryPath;
     StatusBar statusBar;
 
-    juce::ToggleButton debugEvent;
-    juce::ToggleButton forceObrit0;
     juce::ToggleButton syncHost;
+
+    std::unique_ptr<juce::MenuBarComponent> menuBar;
 
     void setLibraryPath();
 

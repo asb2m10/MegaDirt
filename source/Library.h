@@ -38,14 +38,6 @@ class Library : juce::Thread {
 public:
     Library();
 
-    int getNumSamples() {
-        return numSamples;
-    }
-
-    int getNumSounds() {
-        return numSounds;
-    }
-
     void findContent(juce::String samplePath);
     bool lookup(juce::String name, int note);
     Sample *get(juce::String name, int note);
@@ -64,10 +56,18 @@ public:
         return samplePath;
     }
 
+    juce::String getSampleInfo(juce::String name, int note) {
+        juce::Array<SampleHolder> &holders = content.getReference(name);
+
+        note = note % holders.size();
+        SampleHolder &holder = holders.getReference(note);
+
+        return juce::String(holder.filename.getFileName());
+    }
+
 private:
     bool lazyLoading = true;
-    int numSamples = 0;
-    int numSounds = 0;
+    int foundSamples = 0;
 
     void run() override;
     juce::StringArray soundPaths;
