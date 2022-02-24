@@ -215,7 +215,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     for(Event *e = dispatch.consume(); e != nullptr; e = dispatch.consume()) {
         if ( e->time != 0 && e->time + 500 < currentTm ) {
             logger.printf("Flushing late event from dsp thread. %f %f", e->time, currentTm);
-            free(e);
+            delete e;
         } else {
             if ( debugEvent ) {
                 juce::StringArray content;
@@ -264,12 +264,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         if ( event->time >= tmEnd )
             break;
 
-        if ( hostCycle != 0 ) {
-            float reste = event->cycle - hostCycle;
-            float delta = reste * (1/hostCps*250);
-
-            //logger.printf("-- accuracy %f playing %f hostCycle: %f -- resteTm %f", reste, event->cycle, hostCycle, delta);
-        }
         executeEvent++;
 
         // start of event in sample
