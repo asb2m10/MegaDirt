@@ -45,7 +45,7 @@ Basic SuperDirt effects are now supported.
 - [x] Reverb - # room # size
 - [x] Filters - # cutoff # hcutoff # bandf (and the resonance counterpart) #djf 
 - [ ] Delay - #delay #delayt #delayfb
-- [ ] Crush - #crush
+- [x] Crush - #crush
 - [ ] Phaser - #phasr #phasdp
 
 ### Bulding

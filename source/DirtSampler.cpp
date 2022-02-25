@@ -89,6 +89,10 @@ void DirtSampler::prepareToPlay(double rate, int samplesPerBlock) {
     }
 }
 
+static float logsc(float param, const float min,const float max,const float rolloff = 19.0f) {
+	return ((expf(param * logf(rolloff+1)) - 1.0f) / (rolloff)) * (max-min) + min;
+}
+
 void DirtFX::apply(Event *event) {
     if ( reverb.isEnabled() || event->hasKey("room") ) {
         reverb.setEnabled(true);
@@ -98,6 +102,8 @@ void DirtFX::apply(Event *event) {
         // TODO: support msg #dry
         reverb.setParameters(parms);
     }
+
+    bitcrush = pow(2, event->get("crush", 16));
 
     if ( event->hasKey("cutoff") ) {
         filter.setMode(juce::dsp::LadderFilterMode::LPF24);
@@ -116,13 +122,12 @@ void DirtFX::apply(Event *event) {
         filter.setEnabled(true);
     } else if ( event->hasKey("djf") ) {
         float v = event->get("djf");
-        // TODO: theses values must be scaled.
         if ( v < 0.5 ) {
             filter.setMode(juce::dsp::LadderFilterMode::LPF24);
-            filter.setCutoffFrequencyHz(v * sampleRate);
+            filter.setCutoffFrequencyHz(logsc(v*2,19,sampleRate/2));
         } else {
             filter.setMode(juce::dsp::LadderFilterMode::HPF24);
-            filter.setCutoffFrequencyHz((1-v) * sampleRate);
+            filter.setCutoffFrequencyHz(logsc((1-v)*2,19,sampleRate/2));
         }
         filter.setResonance(0);
         filter.setEnabled(true);
@@ -130,6 +135,24 @@ void DirtFX::apply(Event *event) {
         filter.setEnabled(false);
     }
 }
+
+template <typename ProcessContext>
+void DirtFX::process(const ProcessContext& context) {
+        if ( bitcrush < 32768 ) {
+            auto& outputBlock = context.getOutputBlock();
+            const auto numSamples = outputBlock.getNumSamples();
+            float *l = outputBlock.getChannelPointer(0), *r = outputBlock.getChannelPointer(1);
+            for(int i=0;i<numSamples;i++) {
+                *l++ = round(*l*bitcrush)/bitcrush;
+                *r++ = round(*r*bitcrush)/bitcrush;
+            }
+        }
+
+        filter.process(context);
+        //delay.process(context);
+        if ( reverb.isEnabled() )
+            reverb.process(context);
+    }
 
 void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLength) {    
     for (auto &voice: voices) {

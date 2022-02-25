@@ -320,7 +320,20 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     }
 
     if ( panicMode == true ) {
-        // TODO: flush MIDI noteoff events
+        for(auto e: noteOff) {
+            int targetNote = (e->note != 0 ? e->note : e->n) + 48;
+            int midichan = e->get("midichan", 0);
+            midiMessages.addEvent(juce::MidiMessage(0x90+midichan, targetNote, 0), 0);
+        }
+
+        for(auto e: pendingEv) {
+            if ( e->sound == SOUND_MIDI ) {
+                int targetNote = (e->note != 0 ? e->note : e->n) + 48;
+                int midichan = e->get("midichan", 0);
+                midiMessages.addEvent(juce::MidiMessage(0x90+midichan, targetNote, 0), 0);
+            }
+        }
+
         pendingEv.clearQuick();
         sampler.panic();
         panicMode = false;

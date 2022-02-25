@@ -79,7 +79,10 @@ public:
     juce::dsp::DelayLine<float> delay;
     juce::dsp::Reverb reverb;
 
+    int bitcrush;
+
     void reset() {
+        bitcrush = 65535;
         filter.reset();
         filter.setEnabled(false);
         delay.reset();
@@ -105,12 +108,7 @@ public:
     void apply(Event *e);
 
     template <typename ProcessContext>
-    void process(const ProcessContext& context) {
-        filter.process(context);
-        //delay.process(context);
-        if ( reverb.isEnabled() )
-            reverb.process(context);
-    }
+    void process(const ProcessContext& context);
 };
 
 class DirtSampler {
