@@ -224,7 +224,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
                     content.add(i.getKey() + ":" + juce::String(i.getValue()));
                 }
 
-                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g unit:%c %s",
+                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g unit:%c %s %f",
                     e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->unit, content.joinIntoString(" ").toRawUTF8());
             } 
 
@@ -260,7 +260,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     int executeEvent = 0;
     double tmEnd = currentTm + (numSample * 1000 / sampler.sampleRate);
     for(auto event: pendingEv) {
-
         if ( event->time >= tmEnd )
             break;
 
@@ -272,7 +271,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         // event duration in seconds
         double playLength;
         if ( event->hasKey("sustain") ) {
-            playLength = event->get("sustain", 1);
+            playLength = event->keys["sustain"];
         } else {
             playLength = event->delta * event->get("legato", 1);
         }
@@ -303,19 +302,14 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         } else {
             Sample *sample = library.get(event->sound, event->n);
             if ( sample != nullptr ) {
-                if ( forceObrit0 ) 
-                    event->orbit = 0;
-                else if ( event->orbit * 2 >= totalNumOutputChannels ) {
-                    logger.printf("Orbit %d not set in DAW. See plugin output bus.", event->orbit);
-                    event->orbit = 0;
-                }
-
+                event->orbit = event->orbit % (totalNumOutputChannels/2);
                 sampler.play(event, sample, offsetStart, playLength * sampler.sampleRate);
             } else {
                 logger.printf("Sample %s:%i not found", event->sound.toRawUTF8(), (int) event->note);
             }
             patternActivity.set(event->id, true);
         }
+
         delete event;
     }
 
@@ -348,6 +342,11 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
         sampler.processBlock(buffer, numSample);
         buffer.applyGain(*gain);
+
+        if ( forceObrit0 ) {
+            for(int i=2;i<totalNumOutputChannels;i++)
+                buffer.addFrom(i%2, 0, buffer, i, 0, numSample);
+        }
     }
 }
 
