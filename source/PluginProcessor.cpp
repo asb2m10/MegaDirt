@@ -85,6 +85,8 @@ DirtAudioProcessor::DirtAudioProcessor()
     library.setLazyLoading(lazyLoading);
     library.findContent(samplePath);
 
+    forceOrbit0 = prop->getValue("routeOrbit0", "true") == juce::StringRef("true");
+
     // isActive = false;
 }
 
@@ -224,7 +226,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
                     content.add(i.getKey() + ":" + juce::String(i.getValue()));
                 }
 
-                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g unit:%c %s %f",
+                logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g unit:%c %s",
                     e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->unit, content.joinIntoString(" ").toRawUTF8());
             } 
 
@@ -343,9 +345,11 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         sampler.processBlock(buffer, numSample);
         buffer.applyGain(*gain);
 
-        if ( forceObrit0 ) {
-            for(int i=2;i<totalNumOutputChannels;i++)
+        if ( forceOrbit0 ) {
+            for(int i=2;i<totalNumOutputChannels;i++) {
                 buffer.addFrom(i%2, 0, buffer, i, 0, numSample);
+                buffer.clear(i, 0, numSample);
+            }
         }
     }
 }

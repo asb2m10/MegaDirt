@@ -99,7 +99,7 @@ juce::PopupMenu DirtAudioProcessorEditor::getMenuForIndex(int topLevelMenuIndex,
         ret.addItem(configPath, "Dirt library path...", true, false);
         break;
     case 1: 
-        ret.addItem(forceOrbit0, "Route to orbit 0", true, audioProcessor.forceObrit0);
+        ret.addItem(forceOrbit0, "Route to orbit 0", true, audioProcessor.forceOrbit0);
         ret.addItem(enableDebug, "Event content debug", true, audioProcessor.debugEvent);
         break;
     }
@@ -112,10 +112,13 @@ void DirtAudioProcessorEditor::menuItemSelected(int id, int y) {
         setLibraryPath();
         break;
     case forceOrbit0:
-        audioProcessor.forceObrit0 = !audioProcessor.forceObrit0;
+        audioProcessor.forceOrbit0 = !audioProcessor.forceOrbit0;
+        juce::PropertiesFile *prop = audioProcessor.appProp.getUserSettings();
+        prop->setValue("routeOrbit0", audioProcessor.forceOrbit0);
+        prop->saveIfNeeded();
         break;
     case enableDebug:
-        audioProcessor.debugEvent =  !audioProcessor.debugEvent;
+        audioProcessor.debugEvent = !audioProcessor.debugEvent;
         break;
     }
 }

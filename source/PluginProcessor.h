@@ -107,7 +107,7 @@ private:
     DirtLogger logger;
 
     bool debugEvent = false;
-    bool forceObrit0 = true;
+    bool forceOrbit0 = true;
     bool syncHost = false;
 
     void setSamplePath(juce::String paths, bool lazyLoading);
