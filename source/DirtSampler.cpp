@@ -29,7 +29,7 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
         float l = (inL[pos] * invAlpha + inL[pos + interpolationPos] * alpha);
         float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + interpolationPos] * alpha) : l;
 
-        float envValue = voice.getNextSample() * voice.gain;
+        float envValue = voice.getNextSample();
 
         l *= (envValue * voice.panl);
         r *= (envValue * voice.panr);
@@ -134,6 +134,18 @@ void DirtFX::apply(Event *event) {
     } else {
         filter.setEnabled(false);
     }
+
+    float delayMix = event->get("delay", 0);
+    if ( delayMix == 0 ) {
+        delay.enabled = false;
+        delay.reset();
+    } else {
+        delay.enabled = true;
+        delay.setWetLevel(delayMix);
+        delay.setDelayTime(0, event->get("delaytime", 0.5));
+        delay.setDelayTime(1, event->get("delaytime", 0.5));        
+        delay.setFeedback(event->get("delayfeedback", 0.2));
+    }
 }
 
 template <typename ProcessContext>
@@ -149,7 +161,8 @@ void DirtFX::process(const ProcessContext& context) {
         }
 
         filter.process(context);
-        //delay.process(context);
+        delay.process(context);
+
         if ( reverb.isEnabled() )
             reverb.process(context);
     }
@@ -195,10 +208,10 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
                 playLength = abs(sample->getLength() * voice.pitchRatio);
             voice.eventEnd = playLength;
 
-            voice.gain = event->get("gain", 1);
+            float gain = event->get("gain", 1);
             float pan = event->get("pan", 0.5);
-            voice.panl = pan < 0.5 ? 1 : 2 - pan * 2;
-            voice.panr = pan > 0.5 ? 1 : pan * 2;
+            voice.panl = (pan < 0.5 ? 1 : 2 - pan * 2) * gain;
+            voice.panr = (pan > 0.5 ? 1 : pan * 2) * gain;
             voice.envPos = 0;
             voice.releasePos = playLength - 100;
             voice.orbit = event->orbit * 2;

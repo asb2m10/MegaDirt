@@ -1,9 +1,10 @@
 #pragma once
 
+#include <climits>
 #include <juce_dsp/juce_dsp.h>
 #include "Library.h"
 #include "Dispatch.h"
-#include <climits>
+#include "DelayFx.h"
 
 class DirtAudioProcessor;
 
@@ -50,7 +51,7 @@ struct DirtVoice {
 
     float panl = 1;
     float panr = 1;
-    float gain = 1;
+    //float gain = 1;
 
     int loop;
 
@@ -76,7 +77,7 @@ class DirtFX {
     float sampleRate;
 public:
     juce::dsp::LadderFilter<float> filter;
-    juce::dsp::DelayLine<float> delay;
+    Delay<float> delay;
     juce::dsp::Reverb reverb;
 
     int bitcrush;

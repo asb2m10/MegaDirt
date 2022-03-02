@@ -87,7 +87,7 @@ DirtAudioProcessor::DirtAudioProcessor()
     library.setLazyLoading(lazyLoading);
     library.findContent(samplePath);
 
-    forceOrbit0 = prop->getValue("routeOrbit0", 1);
+    forceOrbit0 = prop->getBoolValue("routeOrbit0", true);
 
     // isActive = false;
 }

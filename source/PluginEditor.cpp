@@ -180,5 +180,5 @@ void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {
     audioProcessor.library.lookup(soundName, n);
     audioProcessor.dispatch.produce(e);
 
-    statusBar.msg = "playing: " + audioProcessor.library.getSampleInfo(soundName, n);
+    //statusBar.msg = "playing: " + audioProcessor.library.getSampleInfo(soundName, n);
 }
