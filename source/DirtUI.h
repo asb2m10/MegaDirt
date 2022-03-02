@@ -118,7 +118,7 @@ public:
 };
 
 class LogViewer : public juce::TextEditor {
-  juce::StringArray *log;
+    juce::StringArray *log;
 public:
     LogViewer(juce::StringArray *content) {
         log = content;

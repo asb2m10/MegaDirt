@@ -67,6 +67,8 @@ DirtAudioProcessor::DirtAudioProcessor()
     options.filenameSuffix = "settings";
     appProp.setStorageParameters(options);
 
+
+    // TODO: move this to the .config directory.
     juce::PropertiesFile *prop = appProp.getUserSettings();
     juce::String samplePath = prop->getValue("samplePath", "");
 
@@ -85,7 +87,7 @@ DirtAudioProcessor::DirtAudioProcessor()
     library.setLazyLoading(lazyLoading);
     library.findContent(samplePath);
 
-    forceOrbit0 = prop->getValue("routeOrbit0", "true") == juce::StringRef("true");
+    forceOrbit0 = prop->getValue("routeOrbit0", 1);
 
     // isActive = false;
 }

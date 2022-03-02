@@ -111,11 +111,12 @@ void DirtAudioProcessorEditor::menuItemSelected(int id, int y) {
     case configPath:
         setLibraryPath();
         break;
-    case forceOrbit0:
-        audioProcessor.forceOrbit0 = !audioProcessor.forceOrbit0;
-        juce::PropertiesFile *prop = audioProcessor.appProp.getUserSettings();
-        prop->setValue("routeOrbit0", audioProcessor.forceOrbit0);
-        prop->saveIfNeeded();
+    case forceOrbit0: {
+            audioProcessor.forceOrbit0 = !audioProcessor.forceOrbit0;
+            juce::PropertiesFile *prop = audioProcessor.appProp.getUserSettings();
+            prop->setValue("routeOrbit0", audioProcessor.forceOrbit0);
+            prop->saveIfNeeded();
+        }
         break;
     case enableDebug:
         audioProcessor.debugEvent = !audioProcessor.debugEvent;
