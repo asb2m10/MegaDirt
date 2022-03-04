@@ -90,7 +90,7 @@ void DirtSampler::prepareToPlay(double rate, int samplesPerBlock) {
 }
 
 static float logsc(float param, const float min,const float max,const float rolloff = 19.0f) {
-	return ((expf(param * logf(rolloff+1)) - 1.0f) / (rolloff)) * (max-min) + min;
+    return ((expf(param * logf(rolloff+1)) - 1.0f) / (rolloff)) * (max-min) + min;
 }
 
 void DirtFX::apply(Event *event) {
@@ -150,22 +150,22 @@ void DirtFX::apply(Event *event) {
 
 template <typename ProcessContext>
 void DirtFX::process(const ProcessContext& context) {
-        if ( bitcrush < 32768 ) {
-            auto& outputBlock = context.getOutputBlock();
-            const auto numSamples = outputBlock.getNumSamples();
-            float *l = outputBlock.getChannelPointer(0), *r = outputBlock.getChannelPointer(1);
-            for(int i=0;i<numSamples;i++) {
-                *l++ = round(*l*bitcrush)/bitcrush;
-                *r++ = round(*r*bitcrush)/bitcrush;
-            }
+    if ( bitcrush < 32768 ) {
+        auto& outputBlock = context.getOutputBlock();
+        const auto numSamples = outputBlock.getNumSamples();
+        float *l = outputBlock.getChannelPointer(0), *r = outputBlock.getChannelPointer(1);
+        for(int i=0;i<numSamples;i++) {
+            *l++ = round(*l*bitcrush)/bitcrush;
+            *r++ = round(*r*bitcrush)/bitcrush;
         }
-
-        filter.process(context);
-        delay.process(context);
-
-        if ( reverb.isEnabled() )
-            reverb.process(context);
     }
+
+    filter.process(context);
+    delay.process(context);
+
+    if ( reverb.isEnabled() )
+        reverb.process(context);
+}
 
 void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLength) {    
     for (auto &voice: voices) {
