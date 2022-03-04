@@ -23,14 +23,15 @@ public:
     //==============================================================================
     void resized() override;
     void playSound(juce::String soundName, int n);
-    virtual void timerCallback() override;
+    void timerCallback() override;
+    void paint(juce::Graphics &g) override;
+
+    juce::PopupMenu getMenuForIndex(int topLevelMenuIndex, const juce::String& str);
+    void menuItemSelected(int x, int y);
 
     juce::StringArray getMenuBarNames() {
         return juce::StringArray({"File", "Settings"});
     }
-
-    juce::PopupMenu getMenuForIndex(int topLevelMenuIndex, const juce::String& str);
-    void menuItemSelected(int x, int y);
 
 private:
 

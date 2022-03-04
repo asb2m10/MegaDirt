@@ -44,12 +44,6 @@ DirtAudioProcessor::DirtAudioProcessor()
         // 
 #endif
 {
-    addParameter(gain = new juce::AudioParameterFloat("gain", // parameterID
-                                                    "Gain", // parameter name
-                                                    0.0f,   // minimum value
-                                                    1.0f,   // maximum value
-                                                    0.5f)); // default value
-
     juce::Logger::setCurrentLogger(&logger);
 
     dispatch.connect(DIRT_UDP_PORT);
@@ -88,6 +82,23 @@ DirtAudioProcessor::DirtAudioProcessor()
     library.findContent(samplePath);
 
     forceOrbit0 = prop->getBoolValue("routeOrbit0", true);
+
+    /**
+     * This needs tuning, I need to see how to implement the control buses.
+     *  
+    
+    const char *sendBindAddr = "127.0.0.1";
+    const int sendPort = 6010;
+
+    if ( !tidalSender.connect(sendBindAddr, sendPort) ) {
+        logger.printf("Unable to bind %s on port %d", sendBindAddr, sendPort);
+    }
+
+    for(int i=0; i<24; i++) {
+        addParameter(new TidalCtrl(&tidalSender, i));
+    }
+    
+    */
 
     // isActive = false;
 }
@@ -282,6 +293,14 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
         int midichan = event->get("midichan", 0);
 
+        for(juce::HashMap<juce::String, Alias::AliasDef>::Iterator i (aliases.map); i.next();) {
+            if ( event->keys.contains(i.getKey()) ) {
+                auto dest = i.getValue();
+                int chl = dest.channel != -1 ? dest.channel : midichan;
+                midiMessages.addEvent(juce::MidiMessage(0xb0+chl, dest.cc, event->get(i.getKey())), offsetStart);                
+            }
+        }
+
         if ( event->hasKey("ccv") && event->hasKey("ccn") ) {
             midiMessages.addEvent(juce::MidiMessage(0xb0+midichan, event->get("ccn"), event->get("ccv")), offsetStart);
             midiActivity.set(midichan, true);
@@ -345,8 +364,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         }
 
         sampler.processBlock(buffer, numSample);
-        buffer.applyGain(*gain);
-
         if ( forceOrbit0 ) {
             for(int i=2;i<totalNumOutputChannels;i++) {
                 buffer.addFrom(i%2, 0, buffer, i, 0, numSample);

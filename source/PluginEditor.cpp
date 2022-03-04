@@ -182,3 +182,9 @@ void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {
 
     //statusBar.msg = "playing: " + audioProcessor.library.getSampleInfo(soundName, n);
 }
+
+void DirtAudioProcessorEditor::paint(juce::Graphics &g) {
+  // (Our component is opaque, so we must completely fill the background with a
+  // solid colour)
+  g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+}

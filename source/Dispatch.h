@@ -6,6 +6,11 @@
 #include "Library.h"
 
 struct Event {
+
+    // We default hashmap capacity to 10
+    Event() : keys(10) {
+    }
+
     juce::String sound;
     double time;               // item time in milliseconds
 

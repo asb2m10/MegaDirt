@@ -1,8 +1,8 @@
 ![MegaDirt](assets/logo.png)
 
-MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://github.com/tidalcycles/tidal). It is meant to be run into a DAW as a plugin (VST3) for those who wants a minimal sampler with midi output.
+MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://tidalcycles.org/). It is meant to be run into a DAW as a plugin (VST3) for those who wants a minimal sampler with midi output.
 
-To be fair, SuperDirt is a departure from the "classical sampler" where everything is attached to a midi event. I think this is a huge asset and should be explored more. You can use [TidalCycles](https://tidalcycles.org) to trigger samples into different ways since MegaDirt uses the same OSC protocol.
+To be fair, SuperDirt is a departure from the "classical sampler" where everything is attached to a midi event. I think this is a huge asset and should be explored more. [TidalCycles](https://github.com/tidalcycles/tidal) is used to trigger samples into different ways and MegaDirt uses the same OSC protocol.
 
 * MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory.
 
@@ -10,12 +10,11 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 * Easier installation. MegaDirt can also be run as a standalone application (great for development)
 * Easier audio routing from DAW (orbits are plugin buses) and use DAW audio plugins
 * Easier midi routing from DAW and use DAW midi plugins
-* TidalCycle events can be in sync with the DAW timeline (in progress)
+* TidalCycle events can be in sync with the DAW timeline
 
 ## Things to know
 
-* Orbits are output buses of the plugin. We are limited to 4 bus (orbits). Those might have to be enable the extra ones from the DAW.
-* Renoise doesn't seems to render plugin if the editor window is closed
+* Orbits are output buses of the plugin. We are limited to 4 stereo buses (orbits). Some DAW needs thoses buses to be enable in order to be rendered.
 * Tidal cyles can be sync with DAW playhead, in order to work, you have to set the same tempo/cps on both side
 
 ### What is implemented from SuperDirt
@@ -36,7 +35,12 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 - [x] Multichannel orbit support (based on plugin bus)
 - [x] Support loop units ('r' and 'c')
 - [x] Sync DAW playhead with tidal cycles
+- [ ] Implement control buses (plug to Tidal)
 - [ ] Windows Dirt sample directory
+
+### Known Issues
+- [ ] Find why renoise only render plugin when the window is open
+- [ ] Envelop issues on small samples
 
 ### SuperDirt effects
 

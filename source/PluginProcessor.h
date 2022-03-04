@@ -14,6 +14,7 @@
 #include "Dispatch.h"
 #include "Library.h"
 #include "DirtSampler.h"
+#include "Controller.h"
 
 class DirtAudioProcessorEditor;
 
@@ -85,7 +86,6 @@ public:
     */
 private:
     bool panicMode = false;
-    juce::AudioParameterFloat *gain;
     Library library;
     Dispatch dispatch;
     DirtSampler sampler;
@@ -114,6 +114,9 @@ private:
 
     float lockInDawCycle = 0;
     double lastEvent;
+
+    Alias aliases;
+    juce::OSCSender tidalSender;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

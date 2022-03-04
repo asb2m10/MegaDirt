@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "Controller.h"
 
 class NoteTreeViewItem : public juce::TreeViewItem {
     juce::String label;
@@ -139,5 +140,14 @@ public:
             log->clearQuick();
         else
             juce::TextEditor::performPopupMenuAction(menuItemID);
+    }
+};
+
+
+class AliasEditor : public juce::TableListBoxModel {
+
+public:
+    AliasEditor(Alias *aliases) {
+
     }
 };
