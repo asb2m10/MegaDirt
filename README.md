@@ -6,7 +6,7 @@ To be fair, SuperDirt is a departure from the "classical sampler" where everythi
 
 * MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory.
 
-### MegaDirt might have those advantage over SuperDirt on Supercolider
+### MegaDirt might have those advantages over SuperDirt on Supercollider
 * Easier installation. MegaDirt can also be run as a standalone application (great for development)
 * Easier audio routing from DAW (orbits are plugin buses) and use DAW audio plugins
 * Easier midi routing from DAW and use DAW midi plugins
