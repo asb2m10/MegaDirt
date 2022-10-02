@@ -174,6 +174,7 @@ void DirtAudioProcessorEditor::setLibraryPath() {
 
 void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {
     Event *e = new Event();
+    e->time = 0;
     e->sound = soundName;
     e->n = n;
 
