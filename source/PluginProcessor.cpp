@@ -38,7 +38,11 @@ DirtAudioProcessor::DirtAudioProcessor()
               .withOutput("Orbit0", juce::AudioChannelSet::stereo(), true)
               .withOutput("Orbit1", juce::AudioChannelSet::stereo(), false)
               .withOutput("Orbit2", juce::AudioChannelSet::stereo(), false)
-              .withOutput("Orbit3", juce::AudioChannelSet::stereo(), false)),
+              .withOutput("Orbit3", juce::AudioChannelSet::stereo(), false)
+              .withOutput("Orbit4", juce::AudioChannelSet::stereo(), false)
+              .withOutput("Orbit5", juce::AudioChannelSet::stereo(), false)
+              .withOutput("Orbit6", juce::AudioChannelSet::stereo(), false)
+              .withOutput("Orbit7", juce::AudioChannelSet::stereo(), false)),
         dispatch(&library)
               
         // 

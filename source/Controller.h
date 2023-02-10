@@ -3,7 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 /**
- * @brief Alias are used to map SuperDirt synth parameteres to midi cc.
+ * @brief Alias are used to map SuperDirt synth parameters to midi cc.
  */
 class Alias {
 public:
