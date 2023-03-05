@@ -1,0 +1,1 @@
+Those docker images are provided to run Haskell.

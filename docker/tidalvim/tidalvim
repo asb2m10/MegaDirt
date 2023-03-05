@@ -1,0 +1,19 @@
+#!/bin/bash
+if [ -z "$1" ]; then
+    export DIRTADDR="127.0.0.1"
+else
+    export DIRTADDR=$1
+fi
+
+set -euf -o pipefail
+
+SESSION_FILE=`mktemp session_$(date +"%Y-%m-%d_%T_XXXXXX").tidal`
+
+echo Dirt target is $DIRTADDR
+
+tmux -2 attach-session -t tidal || tmux -2 \
+  new-session -s tidal  \; \
+  split-window -v -t tidal   \; \
+  send-keys -t 0 "nvim $SESSION_FILE" C-m   \; \
+  send-keys -t 1 "/opt/ghc/9.4.4/bin/ghci -ghci-script /home/tidal/tidal.ghci" C-m   \; \
+  select-pane -t 0

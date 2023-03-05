@@ -85,6 +85,8 @@ void Dispatch::connect(int port) {
 
 void Dispatch::oscMessageReceived(const juce::OSCMessage& message) {
     //printf("%s\n", message.getAddressPattern().toString().toRawUTF8());
+
+    juce::Logger::writeToLog(message.getAddressPattern().toString().toRawUTF8());
 }
 
 Event *Dispatch::consume() {

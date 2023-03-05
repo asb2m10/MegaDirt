@@ -1,8 +1,6 @@
 ![MegaDirt](assets/logo.png)
 
-MegaDirt is a re-implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://tidalcycles.org/). It is meant to be run into a DAW as a plugin (VST3) for those who wants a minimal sampler with midi output.
-
-To be fair, SuperDirt is a departure from the "classical sampler" where everything is attached to a midi event. I think this is a huge asset and should be explored more. [TidalCycles](https://github.com/tidalcycles/tidal) is used to trigger samples into different ways and MegaDirt uses the same OSC protocol.
+MegaDirt is a dirty (hence the name MegaDirt) cheap implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt) for [TidalCycles](https://tidalcycles.org/). It is not meant to replace SuperDirt but offer an alternative to TidalCycles users that wants to use a simple solution to trigger midi notes / simpy trigger samples from a DAW.
 
 * MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples) downloaded from SuperDirt quark directory.
 

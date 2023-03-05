@@ -1,0 +1,12 @@
+#!/bin/bash
+set -euf -o pipefail
+
+if [ -z "$1" ]; then
+    export DIRTADDR="127.0.0.1"
+else
+    export DIRTADDR=$1
+fi
+
+echo Dirt target is $DIRTADDR
+
+ghci -ghci-script /home/tidal/tidal.ghci

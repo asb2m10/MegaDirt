@@ -6,8 +6,12 @@ import Sound.Tidal.Context
 import System.IO (hSetEncoding, stdout, utf8)
 hSetEncoding stdout utf8
 
+import System.Environment
+import System.IO.Unsafe
+dirtAddr = unsafePerformIO (getEnv "DIRTADDR")
+
 -- total latency = oLatency + cFrameTimespan
-tidal <- startTidal (superdirtTarget {oLatency = 0.1, oAddress = "127.0.0.1", oPort = 57120}) (defaultConfig {cVerbose = True, cFrameTimespan = 1/20})
+tidal <- startTidal (superdirtTarget {oLatency = 0.1, oAddress = dirtAddr, oPort = 57120}) (defaultConfig {cCtrlAddr = "0.0.0.0", cVerbose = True, cFrameTimespan = 1/20})
 
 :{
 let only = (hush >>)
@@ -77,4 +81,3 @@ let getState = streamGet tidal
 
 :set prompt "tidal> "
 :set prompt-cont ""
-
