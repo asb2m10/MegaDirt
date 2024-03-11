@@ -8,6 +8,7 @@ fi
 set -euf -o pipefail
 
 SESSION_FILE=`mktemp session_$(date +"%Y-%m-%d_%T_XXXXXX").tidal`
+chmod 666 $SESSION_FILE
 
 echo Dirt target is $DIRTADDR
 
@@ -15,5 +16,5 @@ tmux -2 attach-session -t tidal || tmux -2 \
   new-session -s tidal  \; \
   split-window -v -t tidal   \; \
   send-keys -t 0 "nvim $SESSION_FILE" C-m   \; \
-  send-keys -t 1 "/opt/ghc/9.4.4/bin/ghci -ghci-script /home/tidal/tidal.ghci" C-m   \; \
+  send-keys -t 1 "/opt/ghc/9.8.2/bin/ghci -ghci-script /home/tidal/tidal.ghci" C-m   \; \
   select-pane -t 0
