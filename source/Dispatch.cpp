@@ -121,7 +121,7 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
             event->cycle = value.getFloat32();
         } else if ( key == juce::String("delta") ) {
             event->delta = value.getFloat32();
-        } else if ( key == juce::String("s") ) {
+        } else if ( key == juce::String("s") || key == juce::String("sound") ) {
             event->sound = value.getString();
         } else if ( key == juce::String("n") ) {
             event->n = value.isFloat32() ? value.getFloat32() : value.getInt32();

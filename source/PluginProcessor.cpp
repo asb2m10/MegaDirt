@@ -71,19 +71,20 @@ DirtAudioProcessor::DirtAudioProcessor()
     juce::String samplePath = prop->getValue("samplePath", "");
 
     if ( samplePath == "" ) {
+#ifdef JUCE_WINDOWS
+        juce::File rootApp(juce::File::getSpecialLocation(juce::File::SpecialLocationType::windowsLocalAppData));
+        samplePath = rootApp.getChildFile("SuperCollider/downloaded-quarks/Dirt-Samples").getFullPathName();
+#else
         if ((juce::SystemStats::getOperatingSystemType() & juce::SystemStats::MacOSX) != 0) {
             juce::File home("~");
             samplePath = home.getChildFile("Library/Application Support/SuperCollider/downloaded-quarks/Dirt-Samples").getFullPathName();
-        } else if ((juce::SystemStats::getOperatingSystemType() & juce::SystemStats::Windows) != 0) {
-            // Linux
-            juce::File rootApp(juce::File::getSpecialLocation(juce::File::SpecialLocationType::windowsLocalAppData));
-            samplePath = rootApp.getChildFile("SuperCollider/downloaded-quarks/Dirt-Samples").getFullPathName();
         } else {
             // Linux
             juce::File home("~");
             samplePath = home.getChildFile(".local/share/SuperCollider/downloaded-quarks/Dirt-Samples").getFullPathName();
         }
-        logger.printf("Trying default path for Dirt-Sample: %s", samplePath.toRawUTF8());
+#endif
+        logger.printf("Using default path for Dirt-Sample: %s", samplePath.toRawUTF8());
     }
 
     bool lazyLoading = prop->getBoolValue("lazyLoad", true);
