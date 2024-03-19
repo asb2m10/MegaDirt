@@ -99,8 +99,10 @@ juce::PopupMenu DirtAudioProcessorEditor::getMenuForIndex(int topLevelMenuIndex,
         ret.addItem(configPath, "Dirt library path...", true, false);
         break;
     case 1: 
+        ret.addItem(schedOffset, "Set sheduler offset");
         ret.addItem(forceOrbit0, "Route to orbit 0", true, audioProcessor.forceOrbit0);
         ret.addItem(enableDebug, "Event content debug", true, audioProcessor.debugEvent);
+
         break;
     }
     return ret;
@@ -120,6 +122,22 @@ void DirtAudioProcessorEditor::menuItemSelected(int id, int y) {
         break;
     case enableDebug:
         audioProcessor.debugEvent = !audioProcessor.debugEvent;
+        break;
+    case schedOffset:
+        {
+            modalWindow.reset(new juce::AlertWindow("Scheduler Delay", "", juce::AlertWindow::NoIcon));
+            modalWindow->addTextEditor("delay", audioProcessor.rootValueTree.getProperty(IDs::scheduleOffset), "Scheduler delay in milliseconds");
+            modalWindow->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey, 0, 0));
+            modalWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey, 0, 0));
+
+            modalWindow->enterModalState(true, juce::ModalCallbackFunction::create([this](int r) {
+                if (r) {
+                    int delay = this->modalWindow->getTextEditorContents("delay").getIntValue();
+                    audioProcessor.rootValueTree.setProperty(IDs::scheduleOffset, delay, nullptr);
+                }
+                modalWindow.release();
+            }), true);
+        }
         break;
     }
 }
@@ -157,18 +175,19 @@ void DirtAudioProcessorEditor::setLibraryPath() {
     juce::PropertiesFile *prop = audioProcessor.appProp.getUserSettings();
     juce::String samplePath = prop->getValue("samplePath", "");
 
-    settingsWindow = new juce::AlertWindow("Dirt Library", "", juce::AlertWindow::NoIcon);
-    settingsWindow->addTextEditor("path", audioProcessor.library.getSamplePath(), "Sample paths (seperator path ':')");
-    settingsWindow->addComboBox("lazy", { "Enable", "Disable" }, "Sample lazy load");
-    settingsWindow->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey, 0, 0));
-    settingsWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey, 0, 0));
+    modalWindow.reset(new juce::AlertWindow("Dirt Library", "", juce::AlertWindow::NoIcon));
+    modalWindow->addTextEditor("path", audioProcessor.library.getSamplePath(), "Sample paths (seperator path ':')");
+    modalWindow->addComboBox("lazy", { "Enable", "Disable" }, "Sample lazy load");
+    modalWindow->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey, 0, 0));
+    modalWindow->addButton("Cancel", 0, juce::KeyPress(juce::KeyPress::escapeKey, 0, 0));
 
-    settingsWindow->enterModalState(true, juce::ModalCallbackFunction::create([this](int r) {
+    modalWindow->enterModalState(true, juce::ModalCallbackFunction::create([this](int r) {
         if (r) {
-            juce::String path = this->settingsWindow->getTextEditorContents("path");
-            juce::ComboBox *cb = this->settingsWindow->getComboBoxComponent("lazy");
+            juce::String path = this->modalWindow->getTextEditorContents("path");
+            juce::ComboBox *cb = this->modalWindow->getComboBoxComponent("lazy");
             this->audioProcessor.setSamplePath(path, cb->getSelectedId() == 1);
         }
+        modalWindow.release();
     }), true);
 }
 

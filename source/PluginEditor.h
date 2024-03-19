@@ -38,7 +38,8 @@ private:
     enum MenuResults {
         configPath = 1000,
         forceOrbit0,
-        enableDebug
+        enableDebug,
+        schedOffset
     };
 
     // This reference is provided as a quick way for your editor to
@@ -60,7 +61,7 @@ private:
 
     void setLibraryPath();
 
-    juce::AlertWindow *settingsWindow;
+    std::unique_ptr<juce::AlertWindow> modalWindow;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessorEditor)
 };

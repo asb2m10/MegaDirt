@@ -87,11 +87,17 @@ DirtAudioProcessor::DirtAudioProcessor()
         logger.printf("Using default path for Dirt-Sample: %s", samplePath.toRawUTF8());
     }
 
+    // TODO: this should be migrated to valuetree
     bool lazyLoading = prop->getBoolValue("lazyLoad", true);
     library.setLazyLoading(lazyLoading);
     library.findContent(samplePath);
-
     forceOrbit0 = prop->getBoolValue("routeOrbit0", true);
+
+    juce::ValueTree rootVt(IDs::ROOT);
+    rootVt.setProperty(IDs::scheduleOffset, 0, nullptr);
+    rootValueTree = rootVt;
+    scheduleOffset.referTo(rootVt, IDs::scheduleOffset, nullptr);
+    rootValueTree = rootVt;
 
     /**
      * This needs tuning, I need to see how to implement the control buses.
@@ -276,6 +282,8 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
                     }
                 }
             }
+
+            e->time += scheduleOffset;
             pendingEv.addSorted(eventSorter, e);
         }
     }

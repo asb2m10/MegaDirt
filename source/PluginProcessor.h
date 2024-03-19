@@ -15,6 +15,7 @@
 #include "Library.h"
 #include "DirtSampler.h"
 #include "Controller.h"
+#include "Model.h"
 
 class DirtAudioProcessorEditor;
 
@@ -75,6 +76,7 @@ public:
     friend DirtAudioProcessorEditor;
 
     const int DIRT_UDP_PORT = 57120;
+    juce::ValueTree rootValueTree;
 
     /*
     bool canApplyBusCountChange (bool isInput, bool isAddingBuses, BusProperties& outNewBusProperties) override;
@@ -109,6 +111,7 @@ private:
     bool debugEvent = false;
     bool forceOrbit0 = true;
     bool syncHost = false;
+    juce::CachedValue<int> scheduleOffset;
 
     void setSamplePath(juce::String paths, bool lazyLoading);
 
