@@ -101,8 +101,8 @@ DirtAudioProcessor::DirtAudioProcessor()
 
     /**
      * This needs tuning, I need to see how to implement the control buses.
-     *  
-    
+     *
+
     const char *sendBindAddr = "127.0.0.1";
     const int sendPort = 6010;
 
@@ -113,7 +113,7 @@ DirtAudioProcessor::DirtAudioProcessor()
     for(int i=0; i<24; i++) {
         addParameter(new TidalCtrl(&tidalSender, i));
     }
-    
+
     */
 
     // isActive = false;
@@ -315,7 +315,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
             if ( event->keys.contains(i.getKey()) ) {
                 auto dest = i.getValue();
                 int chl = dest.channel != -1 ? dest.channel : midichan;
-                midiMessages.addEvent(juce::MidiMessage(0xb0+chl, dest.cc, event->get(i.getKey())), offsetStart);                
+                midiMessages.addEvent(juce::MidiMessage(0xb0+chl, dest.cc, event->get(i.getKey())), offsetStart);
             }
         }
 

@@ -47,10 +47,10 @@ downloaded from SuperDirt quark directory.
 
 ### SuperDirt effects
 
-Basic SuperDirt effects are now supported. 
+Basic SuperDirt effects are now supported.
 
 - [x] Reverb - # room # size
-- [x] Filters - # cutoff # hcutoff # bandf (and the resonance counterpart) #djf 
+- [x] Filters - # cutoff # hcutoff # bandf (and the resonance counterpart) #djf
 - [x] Delay - #delay #delayt #delayfb
 - [x] Crush - #crush
 - [ ] Phaser - #phasr #phasdp

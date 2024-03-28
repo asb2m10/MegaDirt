@@ -125,7 +125,7 @@ public:
         log = content;
         setMultiLine(true);
         setReadOnly(true);
-        setScrollbarsShown(true);        
+        setScrollbarsShown(true);
     }
 
     void addPopupMenuItems(juce::PopupMenu &menuToAddTo, const juce::MouseEvent *mouseClickEvent) {

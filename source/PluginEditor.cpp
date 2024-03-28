@@ -49,7 +49,7 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
        libraryContent("LibraryContent", "Library Content"), logViewer(&(p.logger.content)) {
 
     menuBar.reset(new juce::MenuBarComponent(this));
-    addAndMakeVisible(menuBar.get());     
+    addAndMakeVisible(menuBar.get());
 
     rootItem = new RootTreeViewItem(&p.library);
 
@@ -62,7 +62,7 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     panicButton.onClick = [this] { this->audioProcessor.panic(); };
 
     addAndMakeVisible(libraryContent);
-    
+
     statusBar.midiActivity = &(p.midiActivity);
     statusBar.patternActivity = &(p.patternActivity);
     addAndMakeVisible(statusBar);

@@ -1,6 +1,7 @@
 #include "Dispatch.h"
 
 const juce::OSCAddressPattern PLAY_PATTERN("/dirt/play");
+const juce::OSCAddressPattern HANDSHAKE_PATTERN("/dirt/handshake");
 
 int note2int(juce::String note) {
     const char *ref = note.toLowerCase().toRawUTF8();
@@ -35,7 +36,7 @@ int note2int(juce::String note) {
 
             default:
                 juce::Logger::writeToLog("Invalid note reference: " + note);
-                return ret;            
+                return ret;
         }
     }
 
@@ -50,7 +51,7 @@ juce::String showOSCMessageArgument (const juce::OSCArgument& arg) {
         return juce::String(arg.getFloat32()) + "F ";
     } else if (arg.isInt32()) {
         return juce::String(arg.getInt32()) + "I ";
-    } else if (arg.isString() + " ") {
+    } else if (arg.isString()) {
         return arg.getString() + " ";
     } else if (arg.isBlob()) {
         printf("blob\n");
@@ -60,7 +61,7 @@ juce::String showOSCMessageArgument (const juce::OSCArgument& arg) {
     } else {
         typeAsString = "(unknown)";
     }
-    //oscLogList.add (getIndentationString (level + 1) + "- " + typeAsString.paddedRight(' ', 12) + valueAsString);*/
+
     return juce::String("");
 }
 
@@ -70,7 +71,6 @@ Dispatch::Dispatch(Library *lib) : library(lib)  {
                                 {
                                 /*  String(dataSize)
                                     oscLogListBox.addInvalidOSCPacket (data, dataSize);*/
-                                
                                 });
     oscReceiver.addListener(this);
 }
@@ -84,8 +84,10 @@ void Dispatch::connect(int port) {
 }
 
 void Dispatch::oscMessageReceived(const juce::OSCMessage& message) {
-    //printf("%s\n", message.getAddressPattern().toString().toRawUTF8());
-
+    if ( message.getAddressPattern() == HANDSHAKE_PATTERN ) {
+        // TODO: reply to sender
+        return;
+    }
     juce::Logger::writeToLog(message.getAddressPattern().toString().toRawUTF8());
 }
 
@@ -116,11 +118,11 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
         if ( key == juce::StringRef("_id_") ) {
             event->id = value.getString().getIntValue() - 1;
         } else if ( key == juce::String("cps") ) {
-            event->cps = value.getFloat32();
+            event->cps = value.isFloat32() ? value.getFloat32() : value.getInt32();
         } else if ( key == juce::String("cycle") ) {
-            event->cycle = value.getFloat32();
+            event->cycle = value.isFloat32() ? value.getFloat32() : value.getInt32();
         } else if ( key == juce::String("delta") ) {
-            event->delta = value.getFloat32();
+            event->delta = value.isFloat32() ? value.getFloat32() : value.getInt32();
         } else if ( key == juce::String("s") || key == juce::String("sound") ) {
             event->sound = value.getString();
         } else if ( key == juce::String("n") ) {
@@ -137,30 +139,34 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
         } else if ( key == juce::String("velocity") ) {
             event->velocity = value.getFloat32();
         } else {
-            if ( ! value.isFloat32() ) {
-                juce::Logger::writeToLog(juce::String("Key not mapped: ") + key);
+            if ( value.isFloat32() || value.isInt32() ) {
+                event->keys.set(key, value.isFloat32() ? value.getFloat32() : value.getInt32());
             } else {
-                event->keys.set(key, value.getFloat32());
+                juce::Logger::writeToLog(juce::String("Key not mapped: ") + key + " : " + showOSCMessageArgument(value));
             }
         }
     }
-    
+
     if ( event->sound != juce::StringRef("midi") && event->sound != juce::StringRef("superpanic") ) {
+        // Sardine sends the sound with the sample index, we change this like TidalCycles
+        int sampleIdx = event->sound.indexOfChar(':');
+        if ( sampleIdx != -1 ) {
+            event->n = event->sound.substring(sampleIdx + 1).getIntValue();
+            event->sound = event->sound.substring(0, sampleIdx);
+        }
+
         if ( ! library->lookup(event->sound, event->n) ) {
             juce::Logger::writeToLog(juce::String("Sound not found: ") + event->sound);
             delete event;
             return;
         }
-    } 
+    }
 
     queue.produce(event);
 }
 
 void Dispatch::oscBundleReceived(const juce::OSCBundle& bundle) {
     double timeTag = bundle.getTimeTag().toTime().toMilliseconds();
-
-    //printf("Delta %i\n", timeTag.toTime().toMilliseconds() - juce::Time::getCurrentTime().toMilliseconds());
-
     if ( timeTag < juce::Time::getCurrentTime().toMilliseconds() ) {
         juce::Logger::writeToLog("Warning: ignoring event in the past");
         return;
