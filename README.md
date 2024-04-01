@@ -18,7 +18,6 @@ downloaded from SuperDirt quark directory.
 
 * Orbits are output buses of the plugin.
 * DAW are picky about absolute time, feel free to set the schedule offset based on the audio interface and plugin chain for accurate timing.
-* Tidalcyles can be sync with DAW playhead. In order to work, you have to set the same tempo/cps on both side.
 
 ### What is implemented from SuperDirt
 

@@ -55,8 +55,6 @@ private:
     juce::Label libraryContent;
     StatusBar statusBar;
 
-    juce::ToggleButton syncHost;
-
     std::unique_ptr<juce::MenuBarComponent> menuBar;
 
     void setLibraryPath();

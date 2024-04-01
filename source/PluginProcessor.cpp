@@ -210,9 +210,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     int numSample = buffer.getNumSamples();
     double currentTm = juce::Time::currentTimeMillis();
-    float hostCps = 0;
-    float hostCycle = 0;
-    double tmPos = 0;
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -222,25 +219,6 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
-
-    // We try to sync host time
-    if ( syncHost ) {
-        auto *playhead = getPlayHead();
-        if (playhead != NULL) {
-            juce::AudioPlayHead::CurrentPositionInfo posInfo;
-            playhead->getCurrentPosition(posInfo);
-            if ( posInfo.isPlaying || posInfo.isRecording ) {
-                hostCycle = posInfo.ppqPosition/4;
-                hostCps = posInfo.bpm/60/4;
-                tmPos = ((double)posInfo.timeInSeconds) * 1000;
-            }
-        }
-    }
-
-    // playhead not playing, reset lock
-    if ( hostCps == 0 ) {
-        lockInDawCycle = 0;
-    }
 
     // get the events from the network thread
     for(Event *e = dispatch.consume(); e != nullptr; e = dispatch.consume()) {
@@ -257,32 +235,7 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
 
                 logger.printf("time:%.0f s:%s cps:%f cycle:%g note:%g n:%g delta:%g unit:%c %s",
                     e->time, e->sound.toRawUTF8(), e->cps, e->cycle, e->note, e->n, e->delta, e->unit, content.joinIntoString(" ").toRawUTF8());
-            } 
-
-            if ( hostCycle != 0 && e->cps != 0 ) {
-                if ( e->cps != hostCps ) {
-                    logger.printf("Warning: Host cps mismatch %f <-> %f, cannot sync", e->cps, hostCps);
-                    lockInDawCycle = 0;
-                } else {
-                    if ( lockInDawCycle == 0 ) {
-                        lockInDawCycle = round(hostCycle)+1 - round(e->cycle);
-                        logger.printf("Locking host cycles with Tidal host %f tidal %f lock %f", hostCycle, e->cycle, lockInDawCycle);
-                    }
-
-                    double delta = e->cycle + lockInDawCycle - hostCycle;
-                    double targetTime = currentTm + delta * (1/hostCps*1000);
-                    //logger.printf("hostCyle %lf target %f delta %lf targetTm %lf", hostCycle, e->cycle + lockInDawCycle, delta, targetTime-currentTm);
-
-                    if (targetTime <= currentTm || targetTime > currentTm+5000 ) {
-                        logger.printf("Sync event too wide, unlocking cycle");
-                        lockInDawCycle = 0;
-                    } else {
-                        e->cycle = e->cycle + lockInDawCycle;
-                        e->time = targetTime;
-                    }
-                }
             }
-
             e->time += scheduleOffset;
             pendingEv.addSorted(eventSorter, e);
         }

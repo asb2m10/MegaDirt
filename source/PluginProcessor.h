@@ -110,12 +110,10 @@ private:
 
     bool debugEvent = false;
     bool forceOrbit0 = true;
-    bool syncHost = false;
     juce::CachedValue<int> scheduleOffset;
 
     void setSamplePath(juce::String paths, bool lazyLoading);
 
-    float lockInDawCycle = 0;
     double lastEvent;
 
     Alias aliases;

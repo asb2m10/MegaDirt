@@ -1,1 +1,1 @@
-Those docker images are provided to run Haskell.
+Those docker images are provided to run Haskell. This is now deprecated since docker cannot send multicast packet that Ableton Link requires.

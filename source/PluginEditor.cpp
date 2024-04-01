@@ -67,12 +67,6 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     statusBar.patternActivity = &(p.patternActivity);
     addAndMakeVisible(statusBar);
 
-    syncHost.setButtonText("Sync with DAW timeline");
-    syncHost.setClickingTogglesState(true);
-    syncHost.setToggleState(p.syncHost, false);
-    syncHost.onClick = [this] { this->audioProcessor.syncHost = this->syncHost.getToggleState(); };
-    addAndMakeVisible(syncHost);
-
     setSize(866, 674);
     startTimer(300);
 
@@ -166,7 +160,6 @@ void DirtAudioProcessorEditor::resized() {
     panicButton.setBounds(width-55, 5 + menuSize, 50, 25);
     libraryContent.setBounds(5, 3 + menuSize, 295, 25);
     soundBrowser.setBounds(5, 35 + menuSize, 295, height - belowLog - 40 - menuSize);
-    syncHost.setBounds(305, height - belowLog - 30, 200, 25);
     logViewer.setBounds(5, height - belowLog, width - 10, belowLog - 27);
     statusBar.setBounds(5, height - 27, width - 10, 25);
 }
