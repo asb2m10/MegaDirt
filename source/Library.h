@@ -72,5 +72,5 @@ private:
     void run() override;
     juce::StringArray soundPaths;
     juce::String samplePath;
-    juce::AudioFormatManager manager;    
+    juce::AudioFormatManager manager;
 };
