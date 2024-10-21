@@ -1,5 +1,13 @@
 #include "DirtSampler.h"
 
+float inBounds(float value, float min, float max) {
+    if ( value < min )
+        return min;
+    if ( value > max )
+        return max;
+    return value;
+}
+
 void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffer, int numSamples) {
     int startOutput = 0;
 
@@ -48,7 +56,7 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
                 if ( voice.loop-- < 1 ) {
                     voice.active = false;
                     break;
-                } 
+                }
                 voice.samplePos = voice.sampleEnd;
             }
         } else {
@@ -113,7 +121,7 @@ void DirtFX::apply(Event *event) {
     } else if ( event->hasKey("hcutoff") ) {
         filter.setMode(juce::dsp::LadderFilterMode::HPF24);
         filter.setCutoffFrequencyHz(event->keys["hcutoff"]);
-        filter.setResonance(event->get("hresonance", 0));
+        filter.setResonance(inBounds(event->get("hresonance", 0), 0, 1));
         filter.setEnabled(true);
     } else if ( event->hasKey("bandf") ) {
         filter.setMode(juce::dsp::LadderFilterMode::BPF24);
@@ -143,7 +151,7 @@ void DirtFX::apply(Event *event) {
         delay.enabled = true;
         delay.setWetLevel(delayMix);
         delay.setDelayTime(0, event->get("delaytime", 0.5));
-        delay.setDelayTime(1, event->get("delaytime", 0.5));        
+        delay.setDelayTime(1, event->get("delaytime", 0.5));
         delay.setFeedback(event->get("delayfeedback", 0.2));
     }
 }
@@ -167,7 +175,7 @@ void DirtFX::process(const ProcessContext& context) {
         reverb.process(context);
 }
 
-void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLength) {    
+void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLength) {
     for (auto &voice: voices) {
         if ( ! voice.active ) {
             voice.active = true;

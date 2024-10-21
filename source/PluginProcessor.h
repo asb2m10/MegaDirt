@@ -93,7 +93,7 @@ private:
     DirtSampler sampler;
 
     juce::ApplicationProperties appProp;
-    
+
     //std::array<Orbit, 16> orbits;
 
     std::bitset<16> patternActivity;

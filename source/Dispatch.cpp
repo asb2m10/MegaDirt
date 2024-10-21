@@ -132,12 +132,14 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
                 event->note = note2int(value.getString());
             else
                 event->note = value.isFloat32() ? value.getFloat32() : value.getInt32();
+        } else if ( key == juce::String("midinote") ) {
+            event->midinote = value.getInt32();
         } else if ( key == juce::String("orbit") ) {
             event->orbit = value.getInt32();
         } else if ( key == juce::String("unit") ) {
             event->unit = value.getString()[0];
         } else if ( key == juce::String("velocity") ) {
-            event->velocity = value.getFloat32();
+            event->velocity = value.isFloat32() ? value.getFloat32() : value.getInt32();
         } else {
             if ( value.isFloat32() || value.isInt32() ) {
                 event->keys.set(key, value.isFloat32() ? value.getFloat32() : value.getInt32());
@@ -145,6 +147,10 @@ void Dispatch::processPlay(const juce::OSCMessage& message, double time) {
                 juce::Logger::writeToLog(juce::String("Key not mapped: ") + key + " : " + showOSCMessageArgument(value));
             }
         }
+    }
+
+    if ( event->sound.isEmpty() ) {
+        juce::Logger::writeToLog("unknown event");
     }
 
     if ( event->sound != juce::StringRef("midi") && event->sound != juce::StringRef("superpanic") ) {

@@ -1,13 +1,19 @@
 ![MegaDirt](assets/logo.png)
 
-MegaDirt is a dirty (hence the name MegaDirt) cheap implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt)
-for [TidalCycles](https://tidalcycles.org/) or [Sardine](https://github.com/Bubobubobubobubo/sardine).
-It is not meant to replace SuperDirt but offer an alternative to "Live Coding" environment users that wants to use a simple
-solution to trigger midi notes / simply trigger samples from a DAW.
+![Screenshot](assets/MegadirtScreenshot.png)
 
-* MegaDirt is a proof of concept, use at your own risk. It was built to see how fast can SuperDirt be reimplemented in
+MegaDirt is a dirty (hence the name MegaDirt) cheap implementation of [SuperDirt](https://github.com/musikinformatik/SuperDirt)
+for [TidalCycles](https://tidalcycles.org/), [strudel](https://strudel.cc/) or [Sardine](https://github.com/Bubobubobubobubo/sardine).
+It is not meant to replace SuperDirt but offer an alternative to "Live Coding" environment for users that want to use a simple solution
+to trigger midi notes / simply trigger samples from a DAW.
+
+* MegaDirt is a proof of concept, it was built to see how fast can SuperDirt be reimplemented in
 C++ with JUCE to be used as a plugin. It expects to use the [Dirt-Sample](https://github.com/tidalcycles/Dirt-Samples)
 downloaded from SuperDirt quark directory.
+  * On Linux it will look by ~/.local/share/SuperCollider/downloaded-quarks/Dirt-Samples
+  * On macOS it will be defaulted by ~/Library/Application Support/SuperCollider/downloaded-quarks/Dirt-Samples
+  * On Windows it will be defaulted by %localappdata%/SuperCollider/downloaded-quarks/Dirt-Samples
+
 
 ### MegaDirt might have those advantages over SuperDirt on Supercollider
 * Easier installation. MegaDirt can also be run as a standalone application (great for development)
@@ -36,7 +42,6 @@ downloaded from SuperDirt quark directory.
 - [x] Character (a5, c, a#, gb) note names
 - [x] Multichannel orbit support (based on plugin bus)
 - [x] Support loop units ('r' and 'c')
-- [x] Sync DAW playhead with tidal cycles
 - [X] Windows Dirt sample directory
 - [ ] Implement control buses (plug to Tidal)
 

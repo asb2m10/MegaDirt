@@ -44,8 +44,6 @@ DirtAudioProcessor::DirtAudioProcessor()
               .withOutput("Orbit6", juce::AudioChannelSet::stereo(), false)
               .withOutput("Orbit7", juce::AudioChannelSet::stereo(), false)),
         dispatch(&library)
-              
-        // 
 #endif
 {
     juce::Logger::setCurrentLogger(&logger);
@@ -61,7 +59,7 @@ DirtAudioProcessor::DirtAudioProcessor()
     juce::PropertiesFile::Options options;
     options.applicationName = "MegaDirt";
     options.osxLibrarySubFolder = "Application Support";
-    options.folderName = "MegaDirt";
+    options.folderName = ".config/MegaDirt";
     options.filenameSuffix = "settings";
     appProp.setStorageParameters(options);
 
@@ -278,7 +276,13 @@ void DirtAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::Mi
         }
 
         if ( event->sound == SOUND_MIDI ) {
-            int targetNote = (event->note != 0 ? event->note : event->n) + 48;
+            int targetNote;
+
+            // if midinote is specified, it is taken over note or n (strudel compatilibty)
+            if ( event->midinote != -1 )
+                targetNote = event->midinote;
+            else
+                targetNote = (event->note != 0 ? event->note : event->n) + 48;
             midiMessages.addEvent(juce::MidiMessage(0x90+midichan, targetNote, event->velocity), offsetStart);
 
             if ( event->velocity != 0 ) {

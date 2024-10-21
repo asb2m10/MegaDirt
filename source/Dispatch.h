@@ -26,6 +26,7 @@ struct Event {
     // note / pitch
     float note = 0;             // item note, if sample will be pitched
     float n = 0;                // item sample index in sound
+    int midinote = -1;          // midinote for midi item
     char unit = 'r';            // unit for the pitch
     //float speed = 1;
 
