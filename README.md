@@ -45,7 +45,6 @@ downloaded from SuperDirt quark directory. Otherwise you can customize this dire
 
 ### Known Issues
 - [ ] Find why renoise only render plugin when the window is open
-- [ ] Envelop issues on small samples
 
 ### SuperDirt effects
 

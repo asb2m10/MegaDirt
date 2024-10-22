@@ -15,7 +15,7 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
         if ( voice.startOffset > numSamples ) {
             voice.startOffset -= numSamples;
             return;
-       }
+        }
 
         startOutput = voice.startOffset;
         numSamples -= startOutput;
@@ -38,6 +38,8 @@ void DirtSampler::processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffe
         float r = (inR != nullptr) ? (inR[pos] * invAlpha + inR[pos + interpolationPos] * alpha) : l;
 
         float envValue = voice.getNextSample();
+        if ( ! voice.active )
+            return;
 
         l *= (envValue * voice.panl);
         r *= (envValue * voice.panr);
@@ -191,7 +193,7 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
                 case 'c' :
                     voice.pitchRatio = (voice.sampleEnd - voice.samplePos) / playLength;
                     voice.pitchRatio *= speed;
-                break; 
+                break;
 
                 case 's':
                     if ( speed != 1 )
@@ -212,23 +214,23 @@ void DirtSampler::play(Event *event, Sample *sample, int offsetStart, int playLe
             voice.loop = event->get("loop", 1);
             voice.loop = voice.loop < 1 ? 0 : voice.loop - 1;
 
+            voice.eventEnd = abs(sample->getLength() * voice.pitchRatio);
             if ( playLength == 0 )
-                playLength = abs(sample->getLength() * voice.pitchRatio);
-            voice.eventEnd = playLength;
+                playLength = voice.eventEnd;
 
             float gain = event->get("gain", 1);
             float pan = event->get("pan", 0.5);
             voice.panl = (pan < 0.5 ? 1 : 2 - pan * 2) * gain;
             voice.panr = (pan > 0.5 ? 1 : pan * 2) * gain;
             voice.envPos = 0;
-            voice.releasePos = playLength - 100;
+            voice.releasePos = playLength;
             voice.orbit = event->orbit * 2;
+            voice.adsr.reset();
+            voice.adsr.noteOn();
 
             if ( fx.size() > event->orbit )
                 fx[event->orbit].apply(event);
 
-            voice.adsr.reset();
-            voice.adsr.noteOn();
             return;
         }
 

@@ -50,9 +50,9 @@ jobs:
       with:
         name: linux-bin
         path: |
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/VST3/*.vst3/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/CLAP/*.clap/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/Standalone/*
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/VST3/*.vst3/**
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/CLAP/*.clap/**
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/Standalone/*
 
   build-macos:
     runs-on: macos-latest
@@ -89,10 +89,10 @@ jobs:
       with:
         name: macos-bin
         path: |
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/VST3/*.vst3/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/CLAP/*.clap/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/AU/*.component/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{env.BUILD_TYPE}}/Standalone/*.app/**
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/VST3/*.vst3/**
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/CLAP/*.clap/**
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/AU/*.component/**
+          ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/Standalone/*.app/**
 
   build-windows:
     runs-on: windows-latest
@@ -129,6 +129,6 @@ jobs:
       with:
         name: windows-bin
         path: |
-          ${{github.workspace}}/build/Source/*_artefacts/${{ env.BUILD_TYPE }}/VST3/*.vst3/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{ env.BUILD_TYPE }}/CLAP/*.clap/**
-          ${{github.workspace}}/build/Source/*_artefacts/${{ env.BUILD_TYPE }}/Standalone/*.exe
+          ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/VST3/*.vst3/**
+          ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/CLAP/*.clap/**
+          ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/Standalone/*.exe

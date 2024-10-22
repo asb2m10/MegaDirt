@@ -8,7 +8,7 @@
 
 class DirtAudioProcessor;
 
-struct DirtVoice { 
+struct DirtVoice {
     int id;
     int serialId;
 
@@ -59,11 +59,15 @@ struct DirtVoice {
 
     inline float getNextSample() {
         envPos++;
-        if ( envPos > releasePos )
+        if ( envPos == releasePos ) {
             adsr.noteOff();
-        if ( envPos >= eventEnd )
+        }
+        if ( envPos >= eventEnd ) {
             active = false;
-            
+        }
+        if ( ! adsr.isActive() ) {
+            active = false;
+        }
         return adsr.getNextSample();
     }
 
@@ -116,10 +120,10 @@ class DirtSampler {
     std::array<DirtVoice, 30> voices;
     float sampleRate = 44100;
     void processVoice(DirtVoice &voice, juce::AudioBuffer<float> &buffer, int numSamples);
-    std::array<DirtFX, 4> fx;
+    std::array<DirtFX, 8> fx;
 public:
     DirtSampler() {
-        juce::ADSR::Parameters envParameters(0.01,0,1,0.1);
+        juce::ADSR::Parameters envParameters(0.01,1,1,0.01);
         for(int i=0; i<voices.size(); i++) {
             voices[i].id = i;
             voices[i].adsr.setParameters(envParameters);
