@@ -63,7 +63,6 @@ DirtAudioProcessor::DirtAudioProcessor()
     options.filenameSuffix = "settings";
     appProp.setStorageParameters(options);
 
-
     // TODO: move this to the .config directory.
     juce::PropertiesFile *prop = appProp.getUserSettings();
     juce::String samplePath = prop->getValue("samplePath", "");

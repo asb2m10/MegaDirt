@@ -9,4 +9,5 @@ namespace IDs
     DECLARE_ID(eventDebug)
     DECLARE_ID(forceOrbit)
     DECLARE_ID(scheduleOffset)
+    DECLARE_ID(dirtPath)
 }
