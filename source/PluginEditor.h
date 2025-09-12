@@ -11,6 +11,7 @@
 //#include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "DirtUI.h"
+#include "HaskellEditor.h"
 
 //==============================================================================
 /**
@@ -48,7 +49,7 @@ private:
     juce::TreeView soundBrowser;
     juce::TextButton panicButton;
     LogViewer logViewer;
-
+    HaskellEditor haskellEditor;
     int logLines = 0;
     RootTreeViewItem *rootItem;
 

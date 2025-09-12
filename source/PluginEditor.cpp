@@ -66,6 +66,8 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     statusBar.midiActivity = &(p.midiActivity);
     statusBar.patternActivity = &(p.patternActivity);
     addAndMakeVisible(statusBar);
+    addAndMakeVisible(haskellEditor);
+
 
     setSize(866, 674);
     startTimer(300);
@@ -150,18 +152,31 @@ void DirtAudioProcessorEditor::timerCallback() {
 }
 
 void DirtAudioProcessorEditor::resized() {
-    int width = getWidth();
-    int height = getHeight();
+    auto bounds = getLocalBounds();
 
-    int menuSize = juce::LookAndFeel::getDefaultLookAndFeel().getDefaultMenuBarHeight();
-    int belowLog =  0.37 * height;
+    menuBar->setBounds(bounds.removeFromTop(juce::LookAndFeel::getDefaultLookAndFeel().getDefaultMenuBarHeight()));
+    statusBar.setBounds(bounds.removeFromBottom(25));
+    logViewer.setBounds(bounds.removeFromBottom(bounds.getHeight() * 0.35));
 
-    menuBar->setBounds(0, 0, getWidth(), menuSize);
-    panicButton.setBounds(width-55, 5 + menuSize, 50, 25);
-    libraryContent.setBounds(5, 3 + menuSize, 295, 25);
-    soundBrowser.setBounds(5, 35 + menuSize, 295, height - belowLog - 40 - menuSize);
-    logViewer.setBounds(5, height - belowLog, width - 10, belowLog - 27);
-    statusBar.setBounds(5, height - 27, width - 10, 25);
+    auto topContent = bounds.removeFromTop(30);
+    libraryContent.setBounds(topContent.removeFromLeft(100));
+    panicButton.setBounds(topContent.removeFromRight(50));
+
+    soundBrowser.setBounds(bounds.removeFromLeft(bounds.getWidth() * 0.20));
+    haskellEditor.setBounds(bounds.reduced(5, 0));
+
+    // int width = getWidth();
+    // int height = getHeight();
+
+    // int menuSize = juce::LookAndFeel::getDefaultLookAndFeel().getDefaultMenuBarHeight();
+    // int belowLog =  0.37 * height;
+
+    // menuBar->setBounds(0, 0, getWidth(), menuSize);
+    // panicButton.setBounds(width-55, 5 + menuSize, 50, 25);
+    // libraryContent.setBounds(5, 3 + menuSize, 295, 25);
+    // soundBrowser.setBounds(5, 35 + menuSize, 295, height - belowLog - 40 - menuSize);
+    // logViewer.setBounds(5, height - belowLog, width - 10, belowLog - 27);
+    // statusBar.setBounds(5, height - 27, width - 10, 25);
 }
 
 void DirtAudioProcessorEditor::setLibraryPath() {
