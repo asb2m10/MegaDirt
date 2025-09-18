@@ -24,7 +24,7 @@
 #include "juce_gui_extra/juce_gui_extra.h"
 
 /**
- ** Dirtycheap Haskell language tokenizer.
+ ** Dirty cheap Haskell language tokenizer.
  */
 class HaskellTokeniser : public juce::CodeTokeniser {
 public:
@@ -144,22 +144,22 @@ public:
         juce::CodeEditorComponent::ColourScheme cs;
 
         for (auto& t : types)
-            cs.set (t.name, juce::Colour (t.colour));
+            cs.set(t.name, juce::Colour (t.colour));
 
         return cs;
     }
 
 private:
     static bool isIdentifierStart (juce::juce_wchar c) {
-        return juce::CharacterFunctions::isLetter (c) || c == '_';
+        return juce::CharacterFunctions::isLetter(c) || c == '_';
     }
 
     static bool isIdentifierBody (juce::juce_wchar c) {
-        return juce::CharacterFunctions::isLetterOrDigit (c) || c == '_';
+        return juce::CharacterFunctions::isLetterOrDigit(c) || c == '_';
     }
 
     static bool isOperator (juce::juce_wchar c) {
-        return juce::String("+-*/%=!<>&|^~?:.$\\").containsChar (c);
+        return juce::String("+-*/%=!<>&|^~?:.$\\").containsChar(c);
     }
 
     static bool isKeyword (const juce::String& ident) {
@@ -172,41 +172,37 @@ private:
     }
 };
 
-class HaskellEditor : public juce::Component {
-    juce::CodeDocument codeDocument;
-    HaskellTokeniser tokenizer;
-    juce::CodeEditorComponent codeEditor = { codeDocument, &tokenizer };
-public:
-    HaskellEditor() {
-        addAndMakeVisible(codeEditor);
+class HaskellCodeComponent : public juce::CodeEditorComponent {
+    std::function<void(juce::String)> stdinCallback;
+
+    void sendSelection() {
+        juce::String doc = getDocument().getAllContent().substring(getSelectionStart().getPosition(), getSelectionEnd().getPosition()).trim();
+        if ( ! doc.isEmpty() ) {
+            stdinCallback(doc);
+        }
     }
 
-    void resized() override {
-        codeEditor.setBounds(getLocalBounds());
-    }    
+public:
+    HaskellCodeComponent(juce::CodeDocument &document, juce::CodeTokeniser* codeTokeniser, std::function<void(juce::String)> stdinCallback) :
+        CodeEditorComponent(document, codeTokeniser), stdinCallback(std::move(stdinCallback)) {
+    }
+
+    void addPopupMenuItems(juce::PopupMenu& m, const juce::MouseEvent* mouseClickEvent) override {
+        juce::CodeEditorComponent::addPopupMenuItems(m, mouseClickEvent);
+        m.addSeparator();
+        m.addItem("Send to Tidal", [this]() {
+            sendSelection();
+        });
+    }
+
+    bool keyPressed(const juce::KeyPress& key) override {
+        // Handle custom keybindings here
+        if ( key.isKeyCode(juce::KeyPress::returnKey) && key.getModifiers().isAltDown() ) {
+            sendSelection();
+            return true;
+        }
+
+        // Let the base class handle other key presses
+        return juce::CodeEditorComponent::keyPressed(key);
+    }
 };
-
-// class ScratchpadPanel : public juce::Component {
-//     juce::CodeDocument codeDocument;
-//     HaskellTokeniser tokenizer;
-//     juce::CodeEditorComponent codeEditor = { codeDocument, &tokenizer };
-//     juce::ValueTree vt;
-// public:
-//     ScratchpadPanel(juce::ValueTree item, PluginColliderAudioProcessor &processor) : vt(item) {
-//         addAndMakeVisible(codeEditor);
-
-//         if ( vt.isValid() ) {
-//             codeDocument.replaceAllContent(vt.getProperty(IDs::spCode, ""));
-//         }
-//     }
-
-//     ~ScratchpadPanel() override {
-//         if ( vt.isValid() ) {
-//             vt.setProperty(IDs::spCode, codeDocument.getAllContent(), nullptr);
-//         }
-//     }
-
-//     void resized() override {
-//         codeEditor.setBounds(getLocalBounds());
-//     }
-// };

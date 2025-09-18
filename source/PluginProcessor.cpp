@@ -96,24 +96,10 @@ DirtAudioProcessor::DirtAudioProcessor()
     scheduleOffset.referTo(rootVt, IDs::scheduleOffset, nullptr);
     rootValueTree = rootVt;
 
-    /**
-     * This needs tuning, I need to see how to implement the control buses.
-     *
-
-    const char *sendBindAddr = "127.0.0.1";
-    const int sendPort = 6010;
-
-    if ( !tidalSender.connect(sendBindAddr, sendPort) ) {
-        logger.printf("Unable to bind %s on port %d", sendBindAddr, sendPort);
-    }
-
-    for(int i=0; i<24; i++) {
-        addParameter(new TidalCtrl(&tidalSender, i));
-    }
-
-    */
-
-    // isActive = false;
+    tidalRunner.stdoutCallback = [this](const juce::String &line) {
+        logger.logMessage(line);
+        //logger.moveCaretToEnd();
+    };
 }
 
 DirtAudioProcessor::~DirtAudioProcessor() {

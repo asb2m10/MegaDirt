@@ -16,6 +16,7 @@
 #include "DirtSampler.h"
 #include "Controller.h"
 #include "Model.h"
+#include "TidalRunner.h"
 
 class DirtAudioProcessorEditor;
 
@@ -118,6 +119,8 @@ private:
 
     Alias aliases;
     juce::OSCSender tidalSender;
+
+    TidalRunner tidalRunner;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

@@ -10,7 +10,14 @@ add_subdirectory(libs/JUCE)                    # If you've put JUCE in a subdire
 
 add_definitions(-w)
 add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
+
 include_directories(libs/JuceLockFreeQueue)
+
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+find_package(Boost REQUIRED COMPONENTS process)
+include_directories(${Boost_INCLUDE_DIRS})
 
 # juce_set_vst2_sdk_path(...)
 # juce_set_aax_sdk_path(...)
@@ -51,7 +58,8 @@ target_sources(MegaDirt
         source/Dispatch.cpp
         source/Library.cpp
         source/PluginEditor.cpp
-        source/PluginProcessor.cpp)
+        source/PluginProcessor.cpp
+        )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
@@ -90,6 +98,7 @@ target_link_libraries(MegaDirt
         juce::juce_audio_utils
         juce::juce_osc
         juce::juce_dsp
+        Boost::process
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
