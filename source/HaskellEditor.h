@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-    PluginCollider Copyright (c) 2025 Pascal Gauthier.
+    MegaDirt Copyright (c) 2025 Pascal Gauthier.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -175,30 +173,70 @@ private:
 class HaskellCodeComponent : public juce::CodeEditorComponent {
     std::function<void(juce::String)> stdinCallback;
 
-    void sendSelection() {
-        juce::String doc = getDocument().getAllContent().substring(getSelectionStart().getPosition(), getSelectionEnd().getPosition()).trim();
-        if ( ! doc.isEmpty() ) {
-            stdinCallback(doc);
+    juce::String selectCodeContext() {
+        auto pos = getCaretPos();;
+
+        auto first = pos;
+        for (auto i = first;;) {
+            i = i.movedByLines(-1);
+            if ( i == first )
+                break;
+            if ( i.getLineText().trim().isEmpty() )
+                break;
+            first = i;
         }
+        moveCaretTo(first, false);
+        moveCaretToStartOfLine(false);
+
+        auto last = pos;
+        for (auto i = last;;) {
+            i = i.movedByLines(1);
+            if ( i == last )
+                break;
+            if ( i.getLineText().trim().isEmpty() )
+                break;
+            last = i;
+        }
+        moveCaretTo(last, true);
+        moveCaretToEndOfLine(true);
+
+        juce::String ret = getTextInRange(getHighlightedRegion()).trim();
+
+        moveCaretTo(pos, false);
+        return ret;
     }
 
 public:
     HaskellCodeComponent(juce::CodeDocument &document, juce::CodeTokeniser* codeTokeniser, std::function<void(juce::String)> stdinCallback) :
         CodeEditorComponent(document, codeTokeniser), stdinCallback(std::move(stdinCallback)) {
+        juce::Font themeFont = getFont();
+        setFont(juce::Font(themeFont.getTypeface()->getName(), 16.0f, themeFont.getStyleFlags()));
     }
 
     void addPopupMenuItems(juce::PopupMenu& m, const juce::MouseEvent* mouseClickEvent) override {
         juce::CodeEditorComponent::addPopupMenuItems(m, mouseClickEvent);
-        m.addSeparator();
-        m.addItem("Send to Tidal", [this]() {
-            sendSelection();
-        });
+        if ( isHighlightActive() ) {
+            m.addSeparator();
+            m.addItem("Send to Tidal", [this]() {
+                stdinCallback(getTextInRange(getHighlightedRegion()));
+            });
+        }
     }
 
     bool keyPressed(const juce::KeyPress& key) override {
-        // Handle custom keybindings here
+        // Execute code at context
         if ( key.isKeyCode(juce::KeyPress::returnKey) && key.getModifiers().isAltDown() ) {
-            sendSelection();
+            if ( isHighlightActive() ) {
+                stdinCallback(getTextInRange(getHighlightedRegion()));
+            } else {
+                stdinCallback(selectCodeContext());
+            }
+            return true;
+        }
+
+        // Stop everything (like SuperCollider)
+        if ( key.isKeyCode('.') && key.getModifiers().isAltDown() ) {
+            stdinCallback("hush");
             return true;
         }
 

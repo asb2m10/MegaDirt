@@ -1,14 +1,25 @@
 /*
-  ==============================================================================
+    MegaDirt Copyright (c) 2025 Pascal Gauthier.
 
-    This file contains the basic framework code for a JUCE plugin processor.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-  ==============================================================================
-*/
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include <stdarg.h>
+#include "BinaryData.h"
 
 const juce::StringRef SOUND_MIDI("midi");
 const juce::StringRef SOUND_SUPERPANIC("superpanic");
@@ -59,11 +70,21 @@ DirtAudioProcessor::DirtAudioProcessor()
     juce::PropertiesFile::Options options;
     options.applicationName = "MegaDirt";
     options.osxLibrarySubFolder = "Application Support";
+#ifdef LINUX
     options.folderName = ".config/MegaDirt";
+#else
+    options.folderName = "MegaDirt";
+#endif
     options.filenameSuffix = "settings";
     appProp.setStorageParameters(options);
 
-    // TODO: move this to the .config directory.
+    juce::File settingsDir = appProp.getUserSettings()->getFile().getParentDirectory();
+    tidalBootScript = settingsDir.getChildFile("tidal-boot.hs");
+    if ( !tidalBootScript.existsAsFile() ) {
+        settingsDir.createDirectory();
+        tidalBootScript.appendData(BinaryData::tidalboot_hs, BinaryData::tidalboot_hsSize);
+    }
+
     juce::PropertiesFile *prop = appProp.getUserSettings();
     juce::String samplePath = prop->getValue("samplePath", "");
 
@@ -100,6 +121,8 @@ DirtAudioProcessor::DirtAudioProcessor()
         logger.logMessage(line);
         //logger.moveCaretToEnd();
     };
+
+    tidalRunner.setTidalStartup(tidalBootScript.getFullPathName());
 }
 
 DirtAudioProcessor::~DirtAudioProcessor() {
@@ -166,8 +189,6 @@ void DirtAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // initialisation that you need..
   sampler.prepareToPlay(sampleRate, samplesPerBlock);
   dispatch.flushEvent();
-
-  isActive = true;
 }
 
 void DirtAudioProcessor::releaseResources() {
@@ -175,7 +196,6 @@ void DirtAudioProcessor::releaseResources() {
   // spare memory, etc.
 
   sampler.panic();
-  isActive = false;
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations

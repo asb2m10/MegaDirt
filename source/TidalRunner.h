@@ -62,12 +62,9 @@ public:
         stdinCallback = [this](const juce::String &line) {
             sendString(line);
         };
-
-        tidalStartup = "~/src/MegaDirt/stidal.ghci";
     }
 
     ~TidalRunner() {
-
     }
 
     void setTidalStartup(const juce::String newTidalStartup) {
