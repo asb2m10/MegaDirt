@@ -28,6 +28,7 @@
 #include "Controller.h"
 #include "Model.h"
 #include "TidalRunner.h"
+#include "juce_gui_extra/juce_gui_extra.h"
 
 class DirtAudioProcessorEditor;
 
@@ -122,6 +123,7 @@ private:
     TidalRunner tidalRunner;
     juce::File tidalBootScript;
     juce::ValueTree pluginState;
+    juce::CodeDocument codeDocument;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DirtAudioProcessor)

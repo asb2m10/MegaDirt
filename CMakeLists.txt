@@ -13,12 +13,6 @@ add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
 
 include_directories(libs/JuceLockFreeQueue)
 
-if(POLICY CMP0167)
-  cmake_policy(SET CMP0167 NEW)
-endif()
-find_package(Boost REQUIRED COMPONENTS process)
-include_directories(${Boost_INCLUDE_DIRS})
-
 # juce_set_vst2_sdk_path(...)
 # juce_set_aax_sdk_path(...)
 
@@ -27,11 +21,12 @@ juce_add_plugin(MegaDirt
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
     COMPANY_NAME "Digital Suburban"             # Specify the name of the plugin's author
+    BUNDLE_ID "com.digitalsuburban.MegaDirt"    # The bundle identifier for the plugin
     IS_SYNTH TRUE                               # Is this a synth or an effect?
     # NEEDS_MIDI_INPUT TRUE/FALSE               # Does the plugin need midi input?
     NEEDS_MIDI_OUTPUT TRUE                      # Does the plugin need midi output?
     # IS_MIDI_EFFECT TRUE/FALSE                 # Is this plugin a MIDI effect?
-    # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
+    EDITOR_WANTS_KEYBOARD_FOCUS TRUE            # Does the editor need keyboard focus?
     COPY_PLUGIN_AFTER_BUILD TRUE                # Should the plugin be installed to a default location after building?
     PLUGIN_MANUFACTURER_CODE DGSB               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE DIRT                            # A unique four-character plugin id with exactly one upper-case character
@@ -98,7 +93,6 @@ target_link_libraries(MegaDirt
         juce::juce_audio_utils
         juce::juce_osc
         juce::juce_dsp
-        Boost::process
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags

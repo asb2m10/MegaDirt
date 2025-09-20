@@ -1,51 +1,49 @@
 #pragma once
 
 #include <juce_core/juce_core.h>
-#include <boost/process.hpp>
-#include <boost/process/v1/io.hpp>
-#include <boost/process/v1/child.hpp>
-#include <boost/asio.hpp>
-#include <iostream>
-#include <memory>
-#include <functional>
+#include "ext/subprocess.hpp"
+#include <stdio.h>
 
+/**
+ * Very cheap process runner that might block on IO.
+ */
 class ProcessRunner {
-    boost::process::v1::ipstream instream;
-    boost::process::v1::ipstream errstream;
-    boost::process::v1::opstream outstream;
-    boost::process::v1::child process;
+    subprocess::Popen process;
     std::thread stdoutThread;
     std::thread stderrThread;
     std::function<void(const juce::String&)> callback;
 
-    void threadReader(boost::process::v1::ipstream &in) {
-        std::string line;
-        while (in && std::getline(in, line)) {
-            callback(juce::String(line));
+    void threadReader(FILE *in) {
+        char line[4096];
+        while (fgets(line, 4095, in) != nullptr) {
+            line[strnlen(line, 4095)-1] = 0; // remove newline
+            callback(juce::String(juce::CharPointer_UTF8(line)));
         }
+
         callback("End of output for TIDAL");
     }
 
 public:
     ProcessRunner(const std::string &exec, const std::string tidalPrompt, std::function<void(const juce::String&)> callback) :
-        process(exec, "-ghci-script", tidalPrompt, boost::process::v1::std_out > instream, boost::process::v1::std_err > errstream, boost::process::v1::std_in < outstream),
+        process({exec, "-ghci-script", tidalPrompt}, subprocess::input{subprocess::PIPE}, subprocess::output{subprocess::PIPE}, subprocess::error{subprocess::PIPE}),
         callback(std::move(callback)) {
-        stdoutThread = std::thread(&ProcessRunner::threadReader, this, std::ref(instream));
-        stderrThread = std::thread(&ProcessRunner::threadReader, this, std::ref(errstream));
+        stdoutThread = std::thread(&ProcessRunner::threadReader, this, process.output());
+        stderrThread = std::thread(&ProcessRunner::threadReader, this, process.error());
     }
 
     ~ProcessRunner() {
-        process.terminate();
+        process.kill(SIGTERM);
         stdoutThread.join();
         stderrThread.join();
     }
 
     bool isRunning() {
-        return process.running();
+        return process.poll();
     }
 
     void sendString(juce::String msg) {
-        outstream << msg << std::endl;
+        fputs(msg.toRawUTF8(), process.input());
+        fputc('\n', process.input());
     }
 };
 
@@ -76,16 +74,7 @@ public:
             juce::Logger::writeToLog("Tidal is already running");
             return;
         }
-
-        boost::process::v2::filesystem::path ghci_path =
-            boost::process::v2::environment::find_executable("ghci");
-
-        if ( ghci_path.empty() ) {
-            juce::Logger::writeToLog("Haskell interpreter not found on system PATH");
-            return;
-        }
-
-        process = std::make_unique<ProcessRunner>(ghci_path.string(), tidalStartup, stdoutCallback);
+        process = std::make_unique<ProcessRunner>("ghci", tidalStartup, stdoutCallback);
     }
     void stopTidal() {
         process.reset();
