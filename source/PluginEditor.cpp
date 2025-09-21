@@ -46,7 +46,9 @@ void RootTreeViewItem::refresh() {
 //==============================================================================
 DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) : 
     AudioProcessorEditor(&p), audioProcessor(p), soundBrowser("SoundBrowser"), panicButton("Panic"),
-       libraryContent("LibraryContent", "Library Content"), logViewer(&(p.logger.content)) {
+       libraryContent("LibraryContent", "Library Content"), logViewer(&(p.logger.content)),
+       codeEditor(codeDocument, &tokenizer, audioProcessor.tidalRunner.stdinCallback)
+    {
 
     menuBar.reset(new juce::MenuBarComponent(this));
     addAndMakeVisible(menuBar.get());
@@ -66,6 +68,7 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
     statusBar.midiActivity = &(p.midiActivity);
     statusBar.patternActivity = &(p.patternActivity);
     addAndMakeVisible(statusBar);
+    addAndMakeVisible(codeEditor);
 
     setSize(866, 674);
     startTimer(300);
@@ -79,6 +82,11 @@ DirtAudioProcessorEditor::DirtAudioProcessorEditor(DirtAudioProcessor &p) :
                                 nullptr);
     }
 
+    audioProcessor.tidalRunner.startTidal();
+    audioProcessor.tidalRunner.stdoutCallback = [this](const juce::String &line) {
+        logViewer.setText(logViewer.getText() + line + "\n");
+        logViewer.moveCaretToEnd();
+    };
 }
 
 DirtAudioProcessorEditor::~DirtAudioProcessorEditor() {
@@ -136,6 +144,10 @@ void DirtAudioProcessorEditor::menuItemSelected(int id, int y) {
     }
 }
 
+void DirtAudioProcessorEditor::sendToTidal(juce::String toSend) {
+    audioProcessor.tidalRunner.sendString(toSend);
+}
+
 void DirtAudioProcessorEditor::timerCallback() {
     if ( rootItem->refContent.size() != audioProcessor.library.content.size() )
         rootItem->refresh();
@@ -150,18 +162,18 @@ void DirtAudioProcessorEditor::timerCallback() {
 }
 
 void DirtAudioProcessorEditor::resized() {
-    int width = getWidth();
-    int height = getHeight();
+    auto bounds = getLocalBounds();
 
-    int menuSize = juce::LookAndFeel::getDefaultLookAndFeel().getDefaultMenuBarHeight();
-    int belowLog =  0.37 * height;
+    menuBar->setBounds(bounds.removeFromTop(juce::LookAndFeel::getDefaultLookAndFeel().getDefaultMenuBarHeight()));
+    statusBar.setBounds(bounds.removeFromBottom(25));
+    logViewer.setBounds(bounds.removeFromBottom(bounds.getHeight() * 0.35));
 
-    menuBar->setBounds(0, 0, getWidth(), menuSize);
-    panicButton.setBounds(width-55, 5 + menuSize, 50, 25);
-    libraryContent.setBounds(5, 3 + menuSize, 295, 25);
-    soundBrowser.setBounds(5, 35 + menuSize, 295, height - belowLog - 40 - menuSize);
-    logViewer.setBounds(5, height - belowLog, width - 10, belowLog - 27);
-    statusBar.setBounds(5, height - 27, width - 10, 25);
+    auto topContent = bounds.removeFromTop(30);
+    libraryContent.setBounds(topContent.removeFromLeft(100));
+    panicButton.setBounds(topContent.removeFromRight(50));
+
+    soundBrowser.setBounds(bounds.removeFromLeft(bounds.getWidth() * 0.20));
+    codeEditor.setBounds(bounds.reduced(5, 0));
 }
 
 void DirtAudioProcessorEditor::setLibraryPath() {
@@ -192,12 +204,10 @@ void DirtAudioProcessorEditor::playSound(juce::String soundName, int n) {
 
     audioProcessor.library.lookup(soundName, n);
     audioProcessor.dispatch.produce(e);
-
-    //statusBar.msg = "playing: " + audioProcessor.library.getSampleInfo(soundName, n);
 }
 
 void DirtAudioProcessorEditor::paint(juce::Graphics &g) {
-  // (Our component is opaque, so we must completely fill the background with a
-  // solid colour)
-  g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+    // (Our component is opaque, so we must completely fill the background with a
+    // solid colour)
+    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }

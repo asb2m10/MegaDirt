@@ -8,5 +8,9 @@ namespace IDs
     DECLARE_ID(ROOT)
     DECLARE_ID(eventDebug)
     DECLARE_ID(forceOrbit)
-    DECLARE_ID(scheduleOffset)
+    DECLARE_ID(code)
+    DECLARE_ID(caretPos)
+    DECLARE_ID(staticSettings)
+        DECLARE_ID(scheduleOffset)
+        DECLARE_ID(dirtPath)
 }

@@ -10,6 +10,7 @@ add_subdirectory(libs/JUCE)                    # If you've put JUCE in a subdire
 
 add_definitions(-w)
 add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
+
 include_directories(libs/JuceLockFreeQueue)
 
 # juce_set_vst2_sdk_path(...)
@@ -20,11 +21,12 @@ juce_add_plugin(MegaDirt
     # ICON_BIG ...                              # ICON_* arguments specify a path to an image file to use as an icon for the Standalone
     # ICON_SMALL ...
     COMPANY_NAME "Digital Suburban"             # Specify the name of the plugin's author
+    BUNDLE_ID "com.digitalsuburban.MegaDirt"    # The bundle identifier for the plugin
     IS_SYNTH TRUE                               # Is this a synth or an effect?
     # NEEDS_MIDI_INPUT TRUE/FALSE               # Does the plugin need midi input?
     NEEDS_MIDI_OUTPUT TRUE                      # Does the plugin need midi output?
     # IS_MIDI_EFFECT TRUE/FALSE                 # Is this plugin a MIDI effect?
-    # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
+    EDITOR_WANTS_KEYBOARD_FOCUS TRUE            # Does the editor need keyboard focus?
     COPY_PLUGIN_AFTER_BUILD TRUE                # Should the plugin be installed to a default location after building?
     PLUGIN_MANUFACTURER_CODE DGSB               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE DIRT                            # A unique four-character plugin id with exactly one upper-case character
@@ -51,7 +53,8 @@ target_sources(MegaDirt
         source/Dispatch.cpp
         source/Library.cpp
         source/PluginEditor.cpp
-        source/PluginProcessor.cpp)
+        source/PluginProcessor.cpp
+        )
 
 # `target_compile_definitions` adds some preprocessor definitions to our target. In a Projucer
 # project, these might be passed in the 'Preprocessor Definitions' field. JUCE modules also make use
@@ -76,7 +79,7 @@ target_compile_definitions(MegaDirt
 # static library. These source files can be of any kind (wav data, images, fonts, icons etc.).
 # Conversion to binary-data will happen when your target is built.
 
-# juce_add_binary_data(AudioPluginData SOURCES ...)
+juce_add_binary_data(AudioPluginData SOURCES source/haskell/tidal-boot.hs)
 
 # `target_link_libraries` links libraries and JUCE modules to other libraries or executables. Here,
 # we're linking our executable target to the `juce::juce_audio_utils` module. Inter-module
@@ -86,7 +89,7 @@ target_compile_definitions(MegaDirt
 
 target_link_libraries(MegaDirt
     PRIVATE
-        # AudioPluginData           # If we'd created a binary data target, we'd link to it here
+        AudioPluginData
         juce::juce_audio_utils
         juce::juce_osc
         juce::juce_dsp

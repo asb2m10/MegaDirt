@@ -11,6 +11,7 @@
 //#include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "DirtUI.h"
+#include "HaskellEditor.h"
 
 //==============================================================================
 /**
@@ -33,6 +34,8 @@ public:
         return juce::StringArray({"File", "Settings"});
     }
 
+    void sendToTidal(juce::String toSend);
+
 private:
 
     enum MenuResults {
@@ -48,12 +51,16 @@ private:
     juce::TreeView soundBrowser;
     juce::TextButton panicButton;
     LogViewer logViewer;
-
     int logLines = 0;
     RootTreeViewItem *rootItem;
 
     juce::Label libraryContent;
     StatusBar statusBar;
+
+    // Code editor
+    juce::CodeDocument codeDocument;
+    HaskellTokeniser tokenizer;
+    HaskellCodeComponent codeEditor;
 
     std::unique_ptr<juce::MenuBarComponent> menuBar;
 
