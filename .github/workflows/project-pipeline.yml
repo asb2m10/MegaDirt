@@ -35,7 +35,7 @@ jobs:
             echo "Generating Nightly Version" >> $GITHUB_STEP_SUMMARY
             export BUILD_VERSION="NIGHTLY-$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)"
             export BUILD_TYPE=DEVBUILD
-          endif
+          fi
 
           echo "build_version=${BUILD_VERSION}" >> "$GITHUB_OUTPUT"
           echo "build_type=${BUILD_TYPE}" >> "$GITHUB_OUTPUT"
