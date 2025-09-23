@@ -57,11 +57,22 @@ jobs:
       with:
          submodules: recursive
 
+    - name: Setup cmake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '4.x.x'
+
     - name: Build
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }}
         cmake --build ${{github.workspace}}/build --config ${{ needs.component_version.outputs.build_type }}
         cmake --install ${{github.workspace}}/build --config ${{ needs.component_version.outputs.build_type }}
+
+    - name: Show artifacts
+      run: ls -lR ${{github.workspace}}/build
+
+    - name: Package
+      run: |
         cpack --config ${{github.workspace}}/build/CPackConfig.cmake -D ZIP
 
     - name: Upload
