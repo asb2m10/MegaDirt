@@ -60,7 +60,7 @@ jobs:
     - name: Build
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }}
-        cmake --build ${{github.workspace}}/build --config ${{ needs.component_version.outputs.build_type }}
+        cmake --install ${{github.workspace}}/build --config ${{ needs.component_version.outputs.build_type }}
         cpack --config ${{github.workspace}}/build/CPackConfig.cmake -D ZIP
 
     - name: Upload
