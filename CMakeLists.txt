@@ -4,18 +4,16 @@ cmake_minimum_required(VERSION 3.15)
 # `project()` command. `project()` sets up some helpful variables that describe source/binary
 # directories, and the current project version. This is a standard CMake command.
 
-set(PROJECT_VERSION "0.1.0" CACHE STRING "Project version")
-project(MegaDirt VERSION ${PROJECT_VERSION})
+set(BUILD_ID "DEVBUILD")
+
+project(MegaDirt VERSION "0.1.0")
 
 add_subdirectory(libs/JUCE EXCLUDE_FROM_ALL)                    # If you've put JUCE in a subdirectory called JUCE
 
 add_definitions(-w)
 add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
-
+add_definitions(-DBUILD_ID=${BUILD_ID})
 include_directories(libs/JuceLockFreeQueue)
-
-# juce_set_vst2_sdk_path(...)
-# juce_set_aax_sdk_path(...)
 
 juce_add_plugin(MegaDirt
     # VERSION ...                               # Set this if the plugin version is different to the project version
@@ -104,6 +102,10 @@ get_target_property(MegaDirt_VST3_PATH  MegaDirt_VST3 JUCE_PLUGIN_ARTEFACT_FILE)
 set(CMAKE_INSTALL_PREFIX "packager")
 install(FILES "${MegaDirt_VST3_PATH}" DESTINATION "VST3" COMPONENT MegaDirt_VST3)
 install(TARGETS MegaDirt_Standalone DESTINATION "Standalone" COMPONENT MegaDirt_Standalone)
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}-${BUILD_ID}")
+endif()
+
 set(CPACK_SET_DESTDIR ON)
 set(CPACK_PACKAGE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dist")
 include(CPack)
