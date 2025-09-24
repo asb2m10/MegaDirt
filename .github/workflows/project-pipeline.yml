@@ -105,13 +105,16 @@ jobs:
     runs-on: windows-latest
     name: "Build Windows"
     environment: default
-    if: ${{ vars.BUILD_WINDOWS == 'true' }}
+    if: ${{ vars.BUILD_WINDOWS != 'true' }}
     needs: [ component_version ]
 
     steps:
     - uses: actions/checkout@v4
       with:
           submodules: recursive
+
+    - name : Debug
+      run: echo "Evaluation vars.BUILD_WINDOWS = ${{ vars.BUILD_WINDOWS }}"
 
     - name: Build
       run: |
