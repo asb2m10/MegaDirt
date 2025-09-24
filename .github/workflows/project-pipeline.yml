@@ -73,7 +73,9 @@ jobs:
 
     - name: Package
       run: |
-        cpack --config ${{github.workspace}}/build/CPackConfig.cmake -D ZIP
+        cat ${{github.workspace}}/build/CPackConfig.cmake
+        cpack --version
+        cpack -V --trace --config ${{github.workspace}}/build/CPackConfig.cmake -D ZIP
 
     - name: Upload
       uses: actions/upload-artifact@v4
