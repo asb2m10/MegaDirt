@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Build Linux"
     environment: default
-    if: ${{ vars.BUILD_LINUX == true }}
+    if: ${{ vars.BUILD_LINUX == 'true' }}
     needs: [ component_version ]
 
     steps:
@@ -105,7 +105,7 @@ jobs:
     runs-on: windows-latest
     name: "Build Windows"
     environment: default
-    if: ${{ vars.BUILD_WINDOWS == true }}
+    if: ${{ vars.BUILD_WINDOWS == 'true' }}
     needs: [ component_version ]
 
     steps:
