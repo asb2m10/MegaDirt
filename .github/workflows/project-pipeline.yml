@@ -46,6 +46,9 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    name: "Build Linux"
+    environment: default
+    if: ${{ vars.BUILD_LINUX == true }}
     needs: [ component_version ]
 
     steps:
@@ -70,19 +73,6 @@ jobs:
         name: linux-bin
         path: |
           ${{github.workspace}}/build/dist/*.zip
-
-  publish-nightly:
-    name: "Publish Nightly"
-    runs-on: ubuntu-latest
-    needs: [ build-linux ]
-    steps:
-      - name: "Upload to nightly"
-        uses: surge-synthesizer/sst-githubactions/upload-to-release@main
-        with:
-          tag: Nightly
-          reuse_tag: true
-          create_tag: false
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   # build-macos:
   #   runs-on: macos-latest
@@ -111,28 +101,43 @@ jobs:
   #         ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/AU/*.component/**
   #         ${{github.workspace}}/build/*_artefacts/${{env.BUILD_TYPE}}/Standalone/*.app/**
 
-  # build-windows:
-  #   runs-on: windows-latest
+  build-windows:
+    runs-on: windows-latest
+    name: "Build Windows"
+    environment: default
+    if: ${{ vars.BUILD_WINDOWS == true }}
+    needs: [ component_version ]
 
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #     with:
-  #         submodules: recursive
+    steps:
+    - uses: actions/checkout@v4
+      with:
+          submodules: recursive
 
-  #   - name: Build
-  #     run: |
-  #         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_CXX_FLAGS=-DDEXED_ID="${{ env.BUILD_VERSION }}"
-  #         cmake --build ${{github.workspace}}/build --config ${{ env.BUILD_TYPE }}
+    - name: Build
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }}
+        cmake --build ${{github.workspace}}/build --config ${{ needs.component_version.outputs.build_type }}
+        cmake --install ${{github.workspace}}/build --config ${{ needs.component_version.outputs.build_type }}
 
-  #   - name: Show
-  #     shell: cmd
-  #     run: dir /s ${{github.workspace}}\build
+    # - name: Upload
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: windows-bin
+    #     path: |
+    #       ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/VST3/*.vst3/**
+    #       ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/CLAP/*.clap/**
+    #       ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/Standalone/*.exe
 
-  #   - name: Upload
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: windows-bin
-  #       path: |
-  #         ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/VST3/*.vst3/**
-  #         ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/CLAP/*.clap/**
-  #         ${{github.workspace}}/build/*_artefacts/${{ env.BUILD_TYPE }}/Standalone/*.exe
+
+  publish-nightly:
+    name: "Publish Nightly"
+    runs-on: ubuntu-latest
+    needs: [ build-linux, build-windows ]
+    steps:
+      - name: "Upload to nightly"
+        uses: surge-synthesizer/sst-githubactions/upload-to-release@main
+        with:
+          tag: Nightly
+          reuse_tag: true
+          create_tag: false
+          token: ${{ secrets.GITHUB_TOKEN }}
