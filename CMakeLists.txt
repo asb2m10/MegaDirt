@@ -98,14 +98,15 @@ target_link_libraries(MegaDirt
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
 
-get_target_property(MegaDirt_VST3_PATH  MegaDirt_VST3 JUCE_PLUGIN_ARTEFACT_FILE)
-set(CMAKE_INSTALL_PREFIX "packager")
-install(FILES "${MegaDirt_VST3_PATH}" DESTINATION "VST3" COMPONENT MegaDirt_VST3)
-install(TARGETS MegaDirt_Standalone DESTINATION "Standalone" COMPONENT MegaDirt_Standalone)
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}-${BUILD_ID}")
-endif()
+# get_target_property(MegaDirt_VST3_PATH  MegaDirt_VST3 JUCE_PLUGIN_ARTEFACT_FILE)
+# set(CMAKE_INSTALL_PREFIX "packager")
+# install(FILES "${MegaDirt_VST3_PATH}" DESTINATION "VST3" COMPONENT MegaDirt_VST3)
+# install(TARGETS MegaDirt_Standalone DESTINATION "Standalone" COMPONENT MegaDirt_Standalone)
+# if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+#     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}-${BUILD_ID}")
+# endif()
 
-set(CPACK_SET_DESTDIR ON)
-set(CPACK_PACKAGE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dist")
-include(CPack)
+# set(CPACK_SET_DESTDIR ON)
+# set(CPACK_PACKAGE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/dist")
+# include(CPack)
+
