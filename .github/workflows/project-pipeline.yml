@@ -65,6 +65,12 @@ jobs:
         cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: path/to/dependencies
+        key: ${{ runner.os }}-debuginstall
+
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
@@ -88,6 +94,12 @@ jobs:
       run: |
         cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
+
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: path/to/dependencies
+        key: ${{ runner.os }}-debuginstall
 
     - name: Upload
       uses: actions/upload-artifact@v4
@@ -114,8 +126,11 @@ jobs:
         cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
-    - name: Show
-      run: ls -lR ${{github.workspace}}/build
+    - uses: actions/cache@v4
+      id: cache
+      with:
+        path: path/to/dependencies
+        key: ${{ runner.os }}-debuginstall
 
     - name: Upload
       uses: actions/upload-artifact@v4
