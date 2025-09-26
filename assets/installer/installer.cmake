@@ -1,8 +1,3 @@
-# get_target_property(MegaDirt_VST3_PATH  MegaDirt_VST3 JUCE_PLUGIN_ARTEFACT_FILE)
-# set(CMAKE_INSTALL_PREFIX "packager")
-# install(FILES "${MegaDirt_VST3_PATH}" DESTINATION "VST3" COMPONENT MegaDirt_VST3)
-# install(TARGETS MegaDirt_Standalone DESTINATION "Standalone" COMPONENT MegaDirt_Standalone)
-
 set(DIST_DIR ${CMAKE_BINARY_DIR}/dist)
 file(MAKE_DIRECTORY ${DIST_DIR})
 
@@ -41,6 +36,7 @@ add_custom_command(
 add_custom_command(
         TARGET installer
         POST_BUILD
+        WORKING_DIRECTORY ${DIST_DIR}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/installer
-        COMMAND ${CMAKE_COMMAND} -E tar cvf ${CMAKE_BINARY_DIR}/installer/${PACKAGE_NAME}.zip --format=zip ${DIST_DIR}
+        COMMAND ${CMAKE_COMMAND} -E tar cvf ${CMAKE_BINARY_DIR}/installer/${PACKAGE_NAME}.zip --format=zip .
         COMMAND ${CMAKE_COMMAND} -E echo "Artifact in: installer/${PACKAGE_NAME}.zip")

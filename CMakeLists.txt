@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 # `project()` command. `project()` sets up some helpful variables that describe source/binary
 # directories, and the current project version. This is a standard CMake command.
 
-set(BUILD_ID "DEVBUILD")
+set(BUILD_ID "DEVBUILD" CACHE STRING "Serial build ID")
 
 project(MegaDirt VERSION "0.1.0")
 
