@@ -68,7 +68,7 @@ jobs:
     - uses: actions/cache@v4
       id: cache
       with:
-        path: path/to/dependencies
+        path: ./build
         key: ${{ runner.os }}-debuginstall
 
     - name: Upload
@@ -98,7 +98,7 @@ jobs:
     - uses: actions/cache@v4
       id: cache
       with:
-        path: path/to/dependencies
+        path: ./build
         key: ${{ runner.os }}-debuginstall
 
     - name: Upload
@@ -129,7 +129,7 @@ jobs:
     - uses: actions/cache@v4
       id: cache
       with:
-        path: path/to/dependencies
+        path: ./build
         key: ${{ runner.os }}-debuginstall
 
     - name: Upload
