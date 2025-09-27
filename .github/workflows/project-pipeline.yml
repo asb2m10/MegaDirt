@@ -53,6 +53,7 @@ jobs:
 
     steps:
     - uses: awalsh128/cache-apt-pkgs-action@latest
+      if: runner.os == 'linux'
       with:
         packages: libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev ccache xvfb libjack-dev libsndfile-dev
 
@@ -60,9 +61,31 @@ jobs:
       with:
          submodules: recursive
 
+    - name: Cache Juce
+      id: juce-cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          build
+        key: ${{ runner.os }}-juce-build-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('.git/modules/libs/JUCE/HEAD') }}
+        restore-keys: |
+          ${{ runner.os }}-juce-build-
+
+    - name: Init Juce
+      if: steps.juce-cache-restore.outputs.cache-hit != 'true'
+      run: |
+        cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
+
+    - name: Store Juce Cache
+      id: juce-cache-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          build
+        key: ${{ steps.juce-cache-restore.outputs.cache-primary-key }}
+
     - name: Build
       run: |
-        cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
     - name: Upload
@@ -76,7 +99,7 @@ jobs:
     runs-on: windows-latest
     name: "Windows Build"
     environment: default
-    if: ${{ vars.BUILD_WINDOWS != 'true' }}
+    if: ${{ vars.BUILD_WINDOWS == 'true' }}
     needs: [ component_version ]
 
     steps:
@@ -100,23 +123,13 @@ jobs:
     runs-on: macos-14
     name: "macOS build"
     environment: default
-    if: ${{ vars.BUILD_MACOS != 'true' }}
+    if: ${{ vars.BUILD_MACOS == 'true' }}
     needs: [ component_version ]
 
     steps:
     - uses: actions/checkout@v4
       with:
          submodules: recursive
-
-    - name: Cache Juce
-      id: juce-cache
-      uses: actions/cache@v4
-      with:
-        path: |
-          build
-        key: ${{ runner.os }}-juce-build-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('.git/modules/libs/JUCE/HEAD') }}
-        restore-keys: |
-          ${{ runner.os }}-juce-build-
 
     - name: Init Juce
       if: steps.juce-cache.outputs.cache-hit != 'true'
