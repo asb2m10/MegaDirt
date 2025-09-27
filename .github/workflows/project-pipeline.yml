@@ -120,17 +120,23 @@ jobs:
       with:
          submodules: recursive
 
+    - uses: apple-actions/import-codesign-certs@v3
+      if: runner.os == 'macOS'
+      with:
+        p12-file-base64: ${{ secrets.MAC_CERTS_P12 }}
+        p12-password: ${{ secrets.MAC_CERT_PWD }}
+
     - name: Build
       run: |
         sudo xcode-select -s '/Applications/Xcode_15.4.app/Contents/Developer'
         cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
-    - uses: actions/cache@v4
-      id: cache
-      with:
-        path: ./build
-        key: ${{ runner.os }}-debuginstall
+    # - uses: actions/cache@v4
+    #   id: cache
+    #   with:
+    #     path: ./build
+    #     key: ${{ runner.os }}-debuginstall
 
     - name: Upload
       uses: actions/upload-artifact@v4

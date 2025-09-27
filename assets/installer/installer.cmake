@@ -40,3 +40,24 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/installer
         COMMAND ${CMAKE_COMMAND} -E tar cvf ${CMAKE_BINARY_DIR}/installer/${PACKAGE_NAME}.zip --format=zip .
         COMMAND ${CMAKE_COMMAND} -E echo "Artifact in: installer/${PACKAGE_NAME}.zip")
+
+if (APPLE)
+    message(STATUS "Configuring for mac installer")
+    add_custom_command(
+            TARGET installer
+            POST_BUILD
+            USES_TERMINAL
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMAND ${CMAKE_COMMAND} -E make_directory installer
+            COMMAND ${CMAKE_SOURCE_DIR}/asset/installer/make_macos_pkg.sh ${PROJECT_NAME} ${DIST_DIR} ${PROJECT_VERSION} ${CMAKE_BINARY_DIR}/installer ${PACKAGE_NAME}
+    )
+elseif (WIN32)
+    message(STATUS "Configuring for windows installer")
+#     add_custom_command(
+#             TARGET obxf-installer
+#             POST_BUILD
+#             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+#             COMMAND ${CMAKE_COMMAND} -E make_directory installer
+#             COMMAND ${CMAKE_SOURCE_DIR}/libs/sst/sst-plugininfra/scripts/installer_win/make_installer.bat "OB-Xf" ${OBXF_PRODUCT_DIR} ${CMAKE_SOURCE_DIR}/resources/installer_win ${CMAKE_BINARY_DIR}/installer "${OBXF_DATE}-${GIT_COMMIT_HASH}" "${CMAKE_SOURCE_DIR}/assets/installer"
+#     )
+endif()
