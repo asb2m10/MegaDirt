@@ -113,7 +113,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          build/libs/JUCE
+          build
         key: ${{ runner.os }}-juce-build-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('.git/modules/libs/JUCE/HEAD') }}
         restore-keys: |
           ${{ runner.os }}-juce-build-
