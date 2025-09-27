@@ -116,8 +116,14 @@ jobs:
 
     - name: Build
       run: |
-        sudo xcode-select -s '/Applications/Xcode_15.4.app/Contents/Developer'
         cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
+
+        export MAC_SIGNING_CERT="${{ secrets.MAC_SIGNING_CERT }}"
+        export MAC_INSTALLING_CERT="${{ secrets.MAC_INSTALLING_CERT }}"
+        export MAC_SIGNING_ID="${{ secrets.MAC_SIGNING_ID }}"
+        export MAC_TEAM_ID="${{ secrets.MAC_TEAM_ID }}"
+        export MAC_TEAM_PASSWORD="${{ secrets.MAC_TEAM_PASSWORD }}"
+        
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
     - name: Upload
