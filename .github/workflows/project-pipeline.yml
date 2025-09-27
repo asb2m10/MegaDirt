@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Linux Build"
     environment: default
-    if: ${{ vars.BUILD_LINUX == 'true' }}
+    if: ${{ vars.BUILD_LINUX != 'true' }}
     needs: [ component_version ]
 
     steps:
@@ -76,7 +76,7 @@ jobs:
     runs-on: windows-latest
     name: "Windows Build"
     environment: default
-    if: ${{ vars.BUILD_WINDOWS == 'true' }}
+    if: ${{ vars.BUILD_WINDOWS != 'true' }}
     needs: [ component_version ]
 
     steps:
@@ -108,11 +108,8 @@ jobs:
       with:
          submodules: recursive
 
-    - name: Init Juce
-      run: |
-        cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
-
     - name: Cache Juce
+      id: juce-cache
       uses: actions/cache@v4
       with:
         path: |
@@ -120,6 +117,11 @@ jobs:
         key: ${{ runner.os }}-juce-build-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('.git/modules/libs/JUCE/HEAD') }}
         restore-keys: |
           ${{ runner.os }}-juce-build-
+
+    - name: Init Juce
+      if: steps.juce-cache.outputs.cache-hit != 'true'
+      run: |
+        cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
 
     - uses: apple-actions/import-codesign-certs@v3
       if: runner.os == 'macOS'
