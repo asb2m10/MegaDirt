@@ -53,17 +53,41 @@ if (APPLE)
     )
 elseif (WIN32)
     message(STATUS "Configuring for windows installer")
+    find_program(INNOSETUP_COMPILER_EXECUTABLE iscc)
+
+    if(
+        NOT INNOSETUP_COMPILER_EXECUTABLE
+        OR "${INNOSETUP_COMPILER_EXECUTABLE}" MATCHES "NOTFOUND"
+        OR NOT EXISTS "${INNOSETUP_COMPILER_EXECUTABLE}"
+    )
+        message(STATUS "Inno Setup compiler not found")
+    else()
+        message(
+            STATUS
+            "Inno Setup compiler found: ${INNOSETUP_COMPILER_EXECUTABLE}"
+        )
+
+        add_executable(innosetup::compiler IMPORTED GLOBAL)
+
+        set_target_properties(
+            innosetup::compiler
+            PROPERTIES
+                IMPORTED_LOCATION "${INNOSETUP_COMPILER_EXECUTABLE}"
+                INSTALL_SCRIPT "${CMAKE_SOURCE_DIR}/assets/installers/installer.iss"
+        )
+    endif()
+
     add_custom_command(
             TARGET installer
             POST_BUILD
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMAND ${CMAKE_COMMAND} -E make_directory installer
-            COMMAND ISCC
+            COMMAND innosetup::compiler
             /O"${CMAKE_BINARY_DIR}/installer" /F"${OBXF_INSTALLER}" /DName="${PROJECT_NAME}"
             /DNameCondensed="${PROJECT_NAME}" /DVersion="${PROJECT_VERSION}-${BUILD_ID}"
             /DVST3 /DSA
             /DLicense="${CMAKE_SOURCE_DIR}/LICENSE"
             /DStagedAssets="${DIST_DIR}"
-            /DData="${CMAKE_SOURCE_DIR}/assets/installers" "$<TARGET_PROPERTY:ISCC,INSTALL_SCRIPT>"
+            /DData="${CMAKE_SOURCE_DIR}/assets/installers" "$<TARGET_PROPERTY:innosetup::compiler,INSTALL_SCRIPT>"
     )
 endif()
