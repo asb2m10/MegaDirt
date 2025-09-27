@@ -53,11 +53,17 @@ if (APPLE)
     )
 elseif (WIN32)
     message(STATUS "Configuring for windows installer")
-#     add_custom_command(
-#             TARGET obxf-installer
-#             POST_BUILD
-#             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-#             COMMAND ${CMAKE_COMMAND} -E make_directory installer
-#             COMMAND ${CMAKE_SOURCE_DIR}/libs/sst/sst-plugininfra/scripts/installer_win/make_installer.bat "OB-Xf" ${OBXF_PRODUCT_DIR} ${CMAKE_SOURCE_DIR}/resources/installer_win ${CMAKE_BINARY_DIR}/installer "${OBXF_DATE}-${GIT_COMMIT_HASH}" "${CMAKE_SOURCE_DIR}/assets/installer"
-#     )
+    add_custom_command(
+            TARGET installer
+            POST_BUILD
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMAND ${CMAKE_COMMAND} -E make_directory installer
+            COMMAND ISCC
+            /O"${CMAKE_BINARY_DIR}/installer" /F"${OBXF_INSTALLER}" /DName="${PROJECT_NAME}"
+            /DNameCondensed="${PROJECT_NAME}" /DVersion="${PROJECT_VERSION}-${BUILD_ID}"
+            /DVST3 /DSA
+            /DLicense="${CMAKE_SOURCE_DIR}/LICENSE"
+            /DStagedAssets="${DIST_DIR}"
+            /DData="${CMAKE_SOURCE_DIR}/assets/installers" "$<TARGET_PROPERTY:ISCC,INSTALL_SCRIPT>"
+    )
 endif()
