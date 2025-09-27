@@ -117,7 +117,7 @@ jobs:
       with:
         path: |
           build/libs/JUCE
-        key: ${{ runner.os }}-juce-build-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('libs/JUCE/.git/HEAD') }}
+        key: ${{ runner.os }}-juce-build-${{ hashFiles('**/CMakeLists.txt') }}-${{ hashFiles('.git/modules/libs/JUCE/HEAD') }}
         restore-keys: |
           ${{ runner.os }}-juce-build-
 
