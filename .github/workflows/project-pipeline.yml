@@ -74,7 +74,7 @@ jobs:
           ${{github.workspace}}/build/installer/*
 
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     name: "Windows Build"
     environment: default
     if: ${{ vars.BUILD_WINDOWS != 'true' }}
@@ -90,6 +90,7 @@ jobs:
       run: |
         dir C:\ProgramData\Chocolatey\bin
         dir "C:\Program Files (x86)"
+        where iscc
     # - name: Build
     #   run: |
     #     cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
