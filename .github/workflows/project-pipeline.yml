@@ -88,11 +88,7 @@ jobs:
     - name: Find iscc
       shell: cmd
       run: |
-        where iscc
-        echo %PATH%
-        cd \
-        dir /s /b iscc.exe
-
+        dir C:\ProgramData\Chocolatey\bin
     # - name: Build
     #   run: |
     #     cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
