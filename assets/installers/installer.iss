@@ -83,6 +83,8 @@ Source: "{#StagedAssets}\{#Name}.vst3\*"; DestDir: "{autocf}\VST3\{#Publisher}\{
 Source: "{#StagedAssets}\{#Name}.exe"; DestDir: "{app}"; Components: SA; Flags: ignoreversion
 #endif
 
+#define FORMATS ""
+
 #ifdef Data
 [Components]
 #ifdef CLAP
