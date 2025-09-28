@@ -85,16 +85,10 @@ jobs:
       with:
           submodules: recursive
 
-    - name: Find iscc
-      shell: cmd
+    - name: Build
       run: |
-        dir C:\ProgramData\Chocolatey\bin
-        dir "C:\Program Files (x86)"
-        where iscc
-    # - name: Build
-    #   run: |
-    #     cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
-    #     cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
+        cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
+        cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
     - name: Upload
       uses: actions/upload-artifact@v4
