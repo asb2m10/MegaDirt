@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Linux Build"
     environment: default
-    if: vars.BUILD_LINUX == 'true'
+    if: vars.BUILD_LINUX != true
     needs: [ component_version ]
 
     steps:
