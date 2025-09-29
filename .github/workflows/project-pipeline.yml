@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Linux Build"
     environment: default
-    if: ${{ vars.SKIP_LINUX != 'true' }}
+    if: ${{ vars.SKIP_LINUX == 'true' }}
     needs: [ component_version ]
 
     steps:
@@ -87,12 +87,6 @@ jobs:
 
     - name: Build
       run: |
-        echo "***"
-        echo ${{ vars.BUILD_WINDOWS }}
-        echo ${{ vars.BUILD_WINDOWS == 'true' }}
-        echo ${{ vars.BUILD_WINDOWS == true }}
-        echo ${{ vars.BUILD_WINDOWS }}
-        echo "***"
         cmake -S . -B ./build -DCMAKE_BUILD_TYPE=${{ needs.component_version.outputs.build_type }} -DBUILD_ID=${{ needs.component_version.outputs.build_version }} -DCOPY_PLUGIN_AFTER_BUILD=FALSE
         cmake --build ./build --config ${{ needs.component_version.outputs.build_type }} --target installer --parallel 3
 
@@ -105,9 +99,9 @@ jobs:
 
   build-macos:
     runs-on: macos-14
-    name: "macOS build"
+    name: "macOS Build"
     environment: default
-    if: ${{ vars.SKIP_MACOS != 'true' }}
+    if: ${{ vars.SKIP_MACOS == 'true' }}
     needs: [ component_version ]
 
     steps:

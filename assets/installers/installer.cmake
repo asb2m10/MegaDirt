@@ -88,6 +88,6 @@ elseif (WIN32)
             /DVST3 /DSA
             /DLicense="${CMAKE_SOURCE_DIR}/LICENSE"
             /DStagedAssets="${DIST_DIR}"
-            /DData="${CMAKE_SOURCE_DIR}/assets/installers" "$<TARGET_PROPERTY:innosetup::compiler,INSTALL_SCRIPT>"
+            /DData="$<TARGET_PROPERTY:innosetup::compiler,INSTALL_SCRIPT>"
     )
 endif()
