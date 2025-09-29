@@ -77,7 +77,7 @@ jobs:
     runs-on: windows-2022
     name: "Windows Build"
     environment: default
-    if: vars.BUILD_WINDOWS == 'true'
+    if: vars.BUILD_WINDOWS == true
     needs: [ component_version ]
 
     steps:
