@@ -73,7 +73,7 @@ elseif (WIN32)
             innosetup::compiler
             PROPERTIES
                 IMPORTED_LOCATION "${INNOSETUP_COMPILER_EXECUTABLE}"
-                INSTALL_SCRIPT "${CMAKE_SOURCE_DIR}/assets/installers/installer.iss"
+                INSTALL_SCRIPT "${CMAKE_SOURCE_DIR}/assets/installers/windows/installer.iss"
         )
     endif()
 
@@ -83,7 +83,7 @@ elseif (WIN32)
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMAND ${CMAKE_COMMAND} -E make_directory installer
             COMMAND innosetup::compiler
-            /O"${CMAKE_BINARY_DIR}/installer" /F"${OBXF_INSTALLER}" /DName="${PROJECT_NAME}"
+            /O"${CMAKE_BINARY_DIR}/installer" /DName="${PROJECT_NAME}"
             /DNameCondensed="${PROJECT_NAME}" /DVersion="${PROJECT_VERSION}-${BUILD_ID}"
             /DVST3 /DSA
             /DLicense="${CMAKE_SOURCE_DIR}/LICENSE"
