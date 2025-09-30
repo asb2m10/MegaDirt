@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     name: "Linux Build"
     environment: default
-    if: ${{ vars.SKIP_LINUX == 'true' }}
+    if: ${{ vars.SKIP_LINUX != 'true' }}
     needs: [ component_version ]
 
     steps:
@@ -101,7 +101,7 @@ jobs:
     runs-on: macos-14
     name: "macOS Build"
     environment: default
-    if: ${{ vars.SKIP_MACOS == 'true' }}
+    if: ${{ vars.SKIP_MACOS != 'true' }}
     needs: [ component_version ]
 
     steps:
