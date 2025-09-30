@@ -74,7 +74,11 @@ public:
             juce::Logger::writeToLog("Tidal is already running");
             return;
         }
-        process = std::make_unique<ProcessRunner>("ghci", tidalStartup, stdoutCallback);
+        try {
+            process = std::make_unique<ProcessRunner>("ghci", tidalStartup, stdoutCallback);
+        } catch (std::runtime_error &e) {
+            juce::Logger::writeToLog("Failed to start Tidal (ghci): " + juce::String(e.what()));
+        }
     }
     void stopTidal() {
         process.reset();
