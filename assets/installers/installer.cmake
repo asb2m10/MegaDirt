@@ -32,7 +32,7 @@ else()
     set(ARCH_NAME "lnx")
 endif()
 
-set(PACKAGE_NAME ${PROJECT_NAME}-${PROJECT_VERSION}-${BUILD_ID}-${ARCH_NAME})
+set(PACKAGE_NAME ${PROJECT_NAME}-${PROJECT_VERSION}-N${BUILD_ID}-${ARCH_NAME})
 
 add_custom_command(
         TARGET installer
