@@ -97,6 +97,5 @@ elseif (WIN32)
             /DLicense="${CMAKE_SOURCE_DIR}/LICENSE"
             /DStagedAssets="${DIST_DIR}"
             /DData="${CMAKE_SOURCE_DIR}/assets/installers/windows" "$<TARGET_PROPERTY:innosetup::compiler,INSTALL_SCRIPT>"
-            /DOutputBaseFilename="${PACKAGE_NAME}"
     )
 endif()

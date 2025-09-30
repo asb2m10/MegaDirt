@@ -10,6 +10,7 @@
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Setup]
+OutputBaseFilename={#NameCondensed}-{#Version}-win
 AppName={#Name}
 AppPublisher={#Publisher}
 AppVerName={#Name}
