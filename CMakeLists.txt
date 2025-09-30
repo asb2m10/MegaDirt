@@ -4,17 +4,16 @@ cmake_minimum_required(VERSION 3.15)
 # `project()` command. `project()` sets up some helpful variables that describe source/binary
 # directories, and the current project version. This is a standard CMake command.
 
-project(MEGADIRT VERSION 0.1.0)
+set(BUILD_ID "DEVBUILD" CACHE STRING "Serial build ID")
 
-add_subdirectory(libs/JUCE)                    # If you've put JUCE in a subdirectory called JUCE
+project(MegaDirt VERSION "0.1.0")
+
+add_subdirectory(libs/JUCE EXCLUDE_FROM_ALL)                    # If you've put JUCE in a subdirectory called JUCE
 
 add_definitions(-w)
 add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
-
+add_definitions(-DBUILD_ID=${BUILD_ID})
 include_directories(libs/JuceLockFreeQueue)
-
-# juce_set_vst2_sdk_path(...)
-# juce_set_aax_sdk_path(...)
 
 juce_add_plugin(MegaDirt
     # VERSION ...                               # Set this if the plugin version is different to the project version
@@ -80,6 +79,7 @@ target_compile_definitions(MegaDirt
 # Conversion to binary-data will happen when your target is built.
 
 juce_add_binary_data(AudioPluginData SOURCES source/haskell/tidal-boot.hs)
+set_target_properties(AudioPluginData PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # `target_link_libraries` links libraries and JUCE modules to other libraries or executables. Here,
 # we're linking our executable target to the `juce::juce_audio_utils` module. Inter-module
@@ -97,3 +97,6 @@ target_link_libraries(MegaDirt
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/assets/installers")
+include(installer)

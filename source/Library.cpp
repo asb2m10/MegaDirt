@@ -14,7 +14,11 @@ Sample *Library::get(juce::String name, int note) {
 
 void Library::findContent(juce::String sp) {
     samplePath = sp;
+#ifdef WIN32
+    soundPaths = juce::StringArray::fromTokens(sp, ";", "");
+#else
     soundPaths = juce::StringArray::fromTokens(sp, ":", "");
+#endif
     // restart indexer
     if ( stopThread(200) )
         startThread();
