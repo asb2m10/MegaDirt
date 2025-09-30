@@ -24,7 +24,15 @@ package(Standalone)
 
 add_dependencies(installer dist)
 
-set(PACKAGE_NAME ${PROJECT_NAME}-${PROJECT_VERSION}-${BUILD_ID}-${CMAKE_SYSTEM_NAME})
+if (APPLE)
+    set(ARCH_NAME "macOS")
+elseif (WIN32)
+    set(ARCH_NAME "win")
+else()
+    set(ARCH_NAME "lnx")
+endif()
+
+set(PACKAGE_NAME ${PROJECT_NAME}-${PROJECT_VERSION}-${BUILD_ID}-${ARCH_NAME})
 
 add_custom_command(
         TARGET installer
@@ -89,5 +97,6 @@ elseif (WIN32)
             /DLicense="${CMAKE_SOURCE_DIR}/LICENSE"
             /DStagedAssets="${DIST_DIR}"
             /DData="${CMAKE_SOURCE_DIR}/assets/installers/windows" "$<TARGET_PROPERTY:innosetup::compiler,INSTALL_SCRIPT>"
+            /DOutputBaseFilename="${PACKAGE_NAME}"
     )
 endif()
