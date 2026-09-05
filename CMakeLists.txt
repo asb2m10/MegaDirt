@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.15)
 
 set(BUILD_ID "DEVBUILD" CACHE STRING "Serial build ID")
 
-project(MegaDirt VERSION "0.1.0")
+project(MegaDirt VERSION "0.1.1")
 
 add_subdirectory(libs/JUCE EXCLUDE_FROM_ALL)                    # If you've put JUCE in a subdirectory called JUCE
 
@@ -14,6 +14,9 @@ add_definitions(-w)
 add_definitions(-DJUCER_ENABLE_GPL_MODE=1)
 add_definitions(-DBUILD_ID=${BUILD_ID})
 include_directories(libs/JuceLockFreeQueue)
+
+#static linking in Windows
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 juce_add_plugin(MegaDirt
     # VERSION ...                               # Set this if the plugin version is different to the project version
